@@ -176,7 +176,6 @@ angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnviron
 .directive('rxAppNav', function () {
     return {
         restrict: 'E',
-        replace: true,
         templateUrl: 'templates/rxAppNav.html',
         scope: {
             items: '=',
@@ -235,7 +234,6 @@ angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnviron
 
     return {
         restrict: 'E',
-        replace: true,
         templateUrl: 'templates/rxAppNavItem.html',
         link: linker,
         scope: {
@@ -299,7 +297,6 @@ angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnviron
 .directive('rxAppSearch', function () {
     return {
         restrict: 'E',
-        replace: true,
         templateUrl: 'templates/rxAppSearch.html',
         scope: {
             placeholder: '@?',

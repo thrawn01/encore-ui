@@ -1,7 +1,7 @@
 /*jshint unused:false*/
 
 // This file is used to help build the 'demo' documentation page and should be updated with example code
-function rxSortableColumnCtrl ($scope, PageTracking, rxSortUtil) {
+angular.module('demoApp').controller('rxSortableColumnCtrl', function ($scope, PageTracking, rxSortUtil) {
     $scope.sort = rxSortUtil.getDefault();
     $scope.pager = PageTracking.createInstance();
 
@@ -27,4 +27,4 @@ function rxSortableColumnCtrl ($scope, PageTracking, rxSortUtil) {
             jobTitle: 'Dev Mom'
         },
     ];
-}
+});

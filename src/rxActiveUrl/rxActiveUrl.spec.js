@@ -38,15 +38,14 @@ describe('Directive: Active URL (inside Product Resources)', function () {
     it('should have class active if URL matches location', function () {
         location.path('/servers');
         var el = helpers.createDirective(validTemplate, compile, scope);
-
-        expect(el.eq(0).hasClass('selected')).to.be.true;
+        expect(el.children(0).hasClass('selected')).to.be.true;
     });
 
     it('should not have class active if URL does not match location', function () {
         location.path('/volumes');
         var el = helpers.createDirective(validTemplate, compile, scope);
 
-        expect(el.eq(0).hasClass('selected')).to.be.false;
+        expect(el.children(0).hasClass('selected')).to.be.false;
     });
 
 });

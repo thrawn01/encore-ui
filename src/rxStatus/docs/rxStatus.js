@@ -1,4 +1,5 @@
-function rxStatusCtrl ($scope, $rootScope, Status) {
+
+angular.module('demoApp').controller('rxStatusCtrl', function ($scope, $rootScope, Status) {
     Status.setScope($scope);
 
     $scope.triggerRouteChangeSuccess = function () {
@@ -49,4 +50,4 @@ function rxStatusCtrl ($scope, $rootScope, Status) {
         $scope.notify && Status.dismiss($scope.notify);
         $scope.notify = undefined;
     };
-}
+});

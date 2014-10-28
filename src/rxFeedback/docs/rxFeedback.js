@@ -1,5 +1,5 @@
 /*jshint unused:false*/
-function rxFeedbackCtrl ($scope, rxNotify) {
+angular.module('demoApp').controller('rxFeedbackCtrl', function ($scope, rxNotify) {
     $scope.alwaysSucceed = function () {
         rxNotify.add('Thanks for your feedback!', {
             type: 'success',
@@ -13,4 +13,4 @@ function rxFeedbackCtrl ($scope, rxNotify) {
             timeout: 3
         });
     };
-}
+});

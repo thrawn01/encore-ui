@@ -370,7 +370,7 @@ describe('rxAppNav', function () {
 
         scope.menuItems = menuItems;
 
-        el = helpers.createDirective(template, compile, scope);
+        el = helpers.createDirective(template, compile, scope).children(0);
     });
 
     it('should exist', function () {
@@ -469,7 +469,7 @@ describe('rxAppNavItem', function () {
 
         scope.item = _.clone(menuItem, true);
 
-        el = helpers.createDirective(template, compile, scope);
+        el = helpers.createDirective(template, compile, scope).children(0);
     });
 
     afterEach(function () {

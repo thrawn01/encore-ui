@@ -1,4 +1,4 @@
-function rxFormDemoCtrl ($scope) {
+angular.module('demoApp').controller('rxFormDemoCtrl', function ($scope) {
     $scope.types = [
         {
             'value': 'SATA',
@@ -105,4 +105,4 @@ function rxFormDemoCtrl ($scope) {
     $scope.optionTableEmptyData = [];
 
     $scope.compressedLayout = { value: false };
-}
+});

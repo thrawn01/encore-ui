@@ -1,7 +1,7 @@
 /*jshint unused:false*/
 
 // This file is used to help build the 'demo' documentation page and should be updated with example code
-function rxPaginateCtrl ($scope, PageTracking) {
+angular.module('demoApp').controller('rxPaginateCtrl', function ($scope, PageTracking) {
     $scope.sorter = {
         predicate: 'id',
         reverse: false
@@ -33,4 +33,4 @@ function rxPaginateCtrl ($scope, PageTracking) {
     $scope.addServers = function () {
         $scope.servers = $scope.servers.concat(makeServers(2));
     };
-}
+});

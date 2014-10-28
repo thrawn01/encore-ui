@@ -1,4 +1,4 @@
-function rxSessionStorageCtrl ($scope, SessionStorage) {
+angular.module('demoApp').controller('rxSessionStorageCtrl', function ($scope, SessionStorage) {
     $scope.setSideKick = function () {
         SessionStorage.setItem('Batman', 'Robin');
     };
@@ -6,4 +6,4 @@ function rxSessionStorageCtrl ($scope, SessionStorage) {
     $scope.getSideKick = function () {
         alert(SessionStorage.getItem('Batman'));
     };
-}
+});

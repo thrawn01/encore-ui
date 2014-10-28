@@ -14,7 +14,6 @@ angular.module('encore.ui.rxActiveUrl', [])
         restrict: 'E',
         templateUrl: 'templates/rxActiveUrl.html',
         transclude: true,
-        replace: true,
         scope: {
             url: '@'
         },

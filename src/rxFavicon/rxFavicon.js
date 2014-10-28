@@ -13,7 +13,6 @@ angular.module('encore.ui.rxFavicon', ['encore.ui.rxEnvironment'])
 .directive('rxFavicon', function (Environment, $parse, $log) {
     return {
         restrict: 'A',
-        replace: true,
         link: function (scope, el, attrs) {
             // parse out the object inside of the rx-favicon attribute
             var favicons = $parse(attrs.rxFavicon)(scope);

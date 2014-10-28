@@ -1,4 +1,4 @@
-function rxAuthCtrl ($scope, Auth) {
+angular.module('demoApp').controller('rxAuthCtrl', function ($scope, Auth) {
     $scope.hasRole = function () {
         alert('Has "superhero" Role? : ' + Auth.hasRole('superhero'));
     };
@@ -6,4 +6,4 @@ function rxAuthCtrl ($scope, Auth) {
     $scope.isAuthenticated = function () {
         alert('Is Authenticated? : ' + Auth.isAuthenticated());
     };
-}
+});

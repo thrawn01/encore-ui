@@ -1,4 +1,4 @@
 /*jshint unused:false*/
-function rxSpinnerCtrl ($scope) {
+angular.module('demoApp').controller('rxSpinnerCtrl', function ($scope) {
     $scope.loading = true;
-}
+});

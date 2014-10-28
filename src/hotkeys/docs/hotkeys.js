@@ -1,5 +1,5 @@
 /*jshint unused:false*/
-function hotkeysCtrl ($scope, hotkeys) {
+angular.module('demoApp').controller('hotkeysCtrl', function ($scope, hotkeys) {
     $scope.volume = 5;
 
     hotkeys.add({
@@ -33,4 +33,4 @@ function hotkeysCtrl ($scope, hotkeys) {
         combo: 'up+up+down+down+left+right+left+right+a+b',
         callback: showHFSHE
     });
-}
+});

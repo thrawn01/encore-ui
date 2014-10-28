@@ -16,6 +16,9 @@ describe('rxLogout', function () {
             ngWindow = { location: '' };
             $provide.value('$window', ngWindow);
 
+            // See https://github.com/angular/angular.js/issues/4931
+            $provide.value('$document', [{}]);
+
             $provide.value('Auth', authMock);
         });
 

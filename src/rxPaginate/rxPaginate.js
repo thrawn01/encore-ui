@@ -16,7 +16,6 @@ angular.module('encore.ui.rxPaginate', [])
 .directive('rxPaginate', function (PageTracking) {
     return {
         templateUrl: 'templates/rxPaginate.html',
-        replace: true,
         restrict: 'E',
         scope: {
             pageTracking: '=',

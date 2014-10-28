@@ -1,7 +1,7 @@
 /*jshint unused:false*/
 
 // This file is used to help build the 'demo' documentation page and should be updated with example code
-function rxPageTitleCtrl ($scope, rxPageTitle) {
+angular.module('demoApp').controller('rxPageTitleCtrl', function ($scope, rxPageTitle) {
     $scope.changeTitle = function () {
         rxPageTitle.setTitle($scope.newTitle);
     };
@@ -11,4 +11,4 @@ function rxPageTitleCtrl ($scope, rxPageTitle) {
     };
 
     $scope.refreshTitle();
-}
+});

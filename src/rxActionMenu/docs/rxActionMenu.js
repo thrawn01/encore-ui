@@ -1,5 +1,5 @@
 /*jshint unused:false*/
-function rxActionMenuCtrl ($scope, rxNotify) {
+angular.module('demoApp').controller('rxActionMenuCtrl', function ($scope, rxNotify) {
 
     $scope.add = function () {
         rxNotify.add('Added!', {
@@ -17,4 +17,4 @@ function rxActionMenuCtrl ($scope, rxNotify) {
         });
     };
 
-}
+});

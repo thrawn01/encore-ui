@@ -211,7 +211,6 @@ describe('rxFormOptionTable (Checkbox)', function () {
         ];
 
         checkScope.myModel = [false, 'unchecked'];
-
         var checkTable = helpers.createDirective(checkboxFormTemplate, compile, checkScope);
         var checkTableScope = checkTable.isolateScope();
         expect(checkTableScope.checkRequired()).to.be.true;
