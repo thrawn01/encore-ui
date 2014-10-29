@@ -86,12 +86,11 @@ var rxNotify = {
 
     byType: {
         value: function (notificationType) {
-            // Using reduce instead of map because protractor was crashing.
+            // This version of the code returns an invalid array.
             var css = '.notification-' + notificationType.toLowerCase();
-            return this.rootElement.$$(css).reduce(function (acc, notificationElement) {
-                acc.push(notification(notificationElement));
-                return acc;
-            }, []);
+            return this.rootElement.$$(css).map(function (notificationElement) {
+                return notification(notificationElement);
+            });
         }
     },
 
