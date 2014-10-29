@@ -23,9 +23,10 @@
                     <input type="checkbox"
                         ng-switch-when="checkbox"
                         id="{{fieldId}}_{{$index}}"
-                        ng-model="$parent.modelProxy[$index]"
-                        ng-change="updateCheckboxes($parent.modelProxy[$index], $index)"
-                        ng-required="checkRequired()">
+                        ng-model="$parent.model[$index]"
+                        ng-change="updateCheckboxes($parent.model[$index], $index)"
+                        ng-required="checkRequired()"
+                        rx-attributes="{'ng-true-value': row.value, 'ng-false-value': row.falseValue}">
                 </label>
             </td>
             <td ng-repeat="column in columns">
