@@ -1,5 +1,5 @@
 angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnvironment', 'ngSanitize',
-    'ngRoute', 'cfp.hotkeys'])
+    'ngRoute', 'cfp.hotkeys', 'encore.ui.rxAuth'])
 /**
 * @ngdoc service
 * @name encore.ui.rxApp:encoreRoutes
@@ -60,7 +60,7 @@ angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnviron
 *     <rx-app site-title="Custom Title"></rx-app>
 * </pre>
 */
-.directive('rxApp', function (encoreRoutes, rxAppRoutes, hotkeys, Environment, routesCdnPath) {
+.directive('rxApp', function (encoreRoutes, rxAppRoutes, hotkeys, Environment, routesCdnPath, Auth) {
     return {
         restrict: 'E',
         transclude: true,
@@ -72,7 +72,8 @@ angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnviron
             collapsedNav: '=?',
             newInstance: '@?',
             hideFeedback: '@?',
-            logoutUrl: '@?'
+            logoutUrl: '@?',
+            hideUnathed: '@?'
         },
         link: function (scope) {
             scope.isPreProd = Environment.isPreProd();
@@ -117,6 +118,8 @@ angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnviron
                     }
                 });
             }
+
+            scope.isAuthenticated = Auth.isAuthenticated();
         }
     };
 })
@@ -417,7 +420,7 @@ angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnviron
         addVisibilityObj: addVisibilityObj
 
     };
-    
+
 })
 
 /*
@@ -425,7 +428,7 @@ angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnviron
  * name encore.ui.rxApp:rxVisibilityPathParams
  * @description
  * Returns an object with `name` and `method` params that can
- * be passed to `rxVisibility.addMethod()`. We use register this by 
+ * be passed to `rxVisibility.addMethod()`. We use register this by
  * default, as it's used by the nav menu we keep in routesCdnPath.
  * The method is used to check if {param: 'someParamName'} is present
  * in the current route
