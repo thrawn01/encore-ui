@@ -5,6 +5,8 @@ angular.module('encore.ui.rxFloatingHeader', [])
         link: function (scope, element, attrs) {
             var updateHeaders = function () {
                 var offset = element.getBoundingClientRect(),
+                    scrollTop = $window.scrollTop,
+                    
                     
 
             };
