@@ -40,6 +40,7 @@ paths:
   rxEnvironment: "/#/component/rxEnvironment"
   rxFavicon: "/#/component/rxFavicon"
   rxFeedback: "/#/component/rxFeedback"
+  rxFloatingHeader: "/#/component/rxFloatingHeader"
   rxForm: "/#/component/rxForm"
   rxIdentity: "/#/component/rxIdentity"
   rxInfoPanel: "/#/component/rxInfoPanel"
