@@ -2,12 +2,13 @@ angular.module('encore.ui.rxFloatingHeader', [])
 .directive('rxFloatingArea', function ($window) {
     return {
         restrict: 'A',
+        scope: {},
         link: function (scope, element) {
             scope.updateHeaders = function () {
-                var offset = element.getBoundingClientRect(),
-                    scrollTop = $window.scrollTop;
+                var offset = element[0].getBoundingClientRect(),
+                    scrollTop = document.body.scrollTop;
                               
-                if ((scrollTop > offset.top) && (scrollTop < offset.top + element.height())) {
+                if ((scrollTop > offset.top) && (scrollTop < offset.top + element[0].offsetHeight)) {
                     scope.floatingHeader.css({
                         'visibility': 'visible'
                     });
@@ -18,6 +19,8 @@ angular.module('encore.ui.rxFloatingHeader', [])
                 }
 
             };
+
+            scope.updateHeaders();
 
         },
         controller: function ($scope, $window) {
@@ -30,8 +33,10 @@ angular.module('encore.ui.rxFloatingHeader', [])
                 headerRow.css('width', headerRow[0].width);
                 headerRow.addClass('rx-floating-header');
 
-                $window.scroll($scope.updateHeaders);
-                $window.trigger('scroll');
+                angular.element($window).bind('scroll', function () {
+                    $scope.updateHeaders();
+                    $scope.$apply();
+                });
             };
         }
     };
@@ -40,7 +45,7 @@ angular.module('encore.ui.rxFloatingHeader', [])
 .directive('rxFloatingHeader', function () {
     return {
         restrict: 'A',
-        require: 'rxFloatingArea',
+        require: '^rxFloatingArea',
         link: function (scope, element, attrs, floatingAreaCtrl) {
             floatingAreaCtrl.registerHeader(element);
         }
