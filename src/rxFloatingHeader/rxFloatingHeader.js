@@ -21,13 +21,10 @@ angular.module('encore.ui.rxFloatingHeader', [])
                     scrollTop = document.body.scrollTop;
                               
                 if ((scrollTop > offset.top) && (scrollTop < offset.top + element[0].offsetHeight)) {
-                    scope.floatingHeader.css({
-                        'visibility': 'visible'
-                    });
+                    scope.header.addClass('rx-floating-header');
+                    scope.header.css({width: scope.headerWidth});
                 } else {
-                    scope.floatingHeader.css({
-                        'visibility': 'hidden'
-                    });
+                    scope.header.removeClass('rx-floating-header');
                 }
 
             };
@@ -37,13 +34,10 @@ angular.module('encore.ui.rxFloatingHeader', [])
         },
         controller: function ($scope, $window) {
             this.registerHeader = function (headerRow) {
-                $scope.floatingHeader = headerRow;
-                $scope.headerClone = headerRow.clone();
+                $scope.header = headerRow;
+                $scope.headerWidth = headerRow[0].offsetWidth;
                 // jquery lite doesn't have .before(), so we use this
                 // http://stackoverflow.com/questions/21788314/angularjs-implement-elements-before-method-without-jquery
-                headerRow.parent()[0].insertBefore($scope.headerClone[0], headerRow[0]);
-                headerRow.css('width', headerRow[0].offsetWidth);
-                headerRow.addClass('rx-floating-header');
 
                 angular.element($window).bind('scroll', function () {
                     $scope.updateHeaders();
