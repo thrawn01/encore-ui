@@ -315,6 +315,7 @@ angular.module('encore.ui.rxApp', ['encore.ui.rxAppRoutes', 'encore.ui.rxEnviron
  * @restrict E
  * @description
  * Provides the ability to switch between account users. This directive is specific to Rackspace
+ *
  */
 .directive('rxAccountUsers', function ($location, $route, Encore, $rootScope, encoreRoutes) {
     return {
