@@ -17,28 +17,50 @@ angular.module('encore.ui.rxFloatingHeader', [])
                 return { left: _x, top:_y };
             };
 
+            var tableHeight,
+                state = 'fixed',
+                seenFirstScroll = false;
+
+            scope.header = angular.element(element.find('thead'));
+
             scope.updateHeaders = function () {
                 var offset = getOffset(element),
                     scrollTop = document.body.scrollTop;
-                              
-                if ((scrollTop > offset.top) && (scrollTop < offset.top + element[0].offsetHeight)) {
-                    scope.header.addClass('rx-floating-header');
-                    _.each(_.zip(scope.header.find('th'), scope.thWidths), function (pair) {
-                        var element = pair[0];
-                        var width = pair[1];
-                        angular.element(element).css({'width': width});
-                    });
+
+                if (_.isUndefined(tableHeight)) {
+                    tableHeight = element[0].offsetHeight;
+                }
+
+                tableHeight = _.max([tableHeight, element[0].offsetHeight]);
+
+                if ((scrollTop > offset.top) && (scrollTop < offset.top + tableHeight)){
+                    if (state === 'fixed') {
+                        state = 'float';
+                        scope.header.addClass('rx-floating-header');
+                        _.each(_.zip(scope.header.find('th'), scope.thWidths), function (pair) {
+                            var element = pair[0];
+                            var width = pair[1];
+                            angular.element(element).css({ 'width': width });
+                        });
+                    }
 
                 } else {
-                    scope.header.removeClass('rx-floating-header');
-                    scope.thWidths = _.map(scope.header.find('th'), function (th) {
-                        return $window.getComputedStyle(th).width;
-                    });
+                    if (state === 'float' || !seenFirstScroll) {
+                        state = 'fixed';
+                        seenFirstScroll = true;
+                        scope.header.removeClass('rx-floating-header');
+                        scope.thWidths = _.map(scope.header.find('th'), function (th) {
+                            return $window.getComputedStyle(th).width;
+                        });
+                    }
                 }
 
             };
 
-            scope.updateHeaders();
+            angular.element($window).bind('scroll', function () {
+                scope.updateHeaders();
+                scope.$apply();
+            });
 
         },
         controller: function ($scope, $window) {
@@ -49,16 +71,6 @@ angular.module('encore.ui.rxFloatingHeader', [])
                     $scope.$apply();
                 });
             };
-        }
-    };
-})
-
-.directive('rxFloatingHeader', function () {
-    return {
-        restrict: 'A',
-        require: '^rxFloatingArea',
-        link: function (scope, element, attrs, floatingAreaCtrl) {
-            floatingAreaCtrl.registerHeader(element);
         }
     };
 });
