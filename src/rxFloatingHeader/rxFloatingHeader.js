@@ -22,6 +22,17 @@ angular.module('encore.ui.rxFloatingHeader', [])
                 seenFirstScroll = false;
 
             scope.header = angular.element(element.find('thead'));
+            scope.trs = [];
+            // http://stackoverflow.com/questions/21788314/angularjs-implement-elements-before-method-without-jquery
+            //scope.headerClone = scope.header.parent()[0].insertBefore(scope.header.clone()[0], scope.header[0]);
+            _.each(scope.header.find('tr'), function(tr) {
+                tr = angular.element(tr);
+                tr.parent()[0].insertBefore(tr.clone()[0], tr[0]);
+                tr.css({ 'width': $window.getComputedStyle(tr[0]).width });
+                //scope.header.append(tr.clone());
+                tr.addClass('please-look-here');
+                scope.trs.push(tr);
+            });
 
             scope.updateHeaders = function () {
                 var offset = getOffset(element),
@@ -36,11 +47,17 @@ angular.module('encore.ui.rxFloatingHeader', [])
                 if ((scrollTop > offset.top) && (scrollTop < offset.top + tableHeight)){
                     if (state === 'fixed') {
                         state = 'float';
-                        scope.header.addClass('rx-floating-header');
-                        _.each(_.zip(scope.header.find('th'), scope.thWidths), function (pair) {
-                            var element = pair[0];
-                            var width = pair[1];
-                            angular.element(element).css({ 'width': width });
+                        //scope.header.addClass('rx-floating-header');
+                        _.each(scope.trs, function(tr) {
+                            tr = angular.element(tr);
+                            tr.css({ 'width': $window.getComputedStyle(tr[0]).width });
+                            _.each(_.zip(tr.find('th'), scope.thWidths), function (pair) {
+                                var th = pair[0];
+                                var width = pair[1];
+                                console.log('Setting width ' + width);
+                                angular.element(th).css({ 'width': width });
+                            });
+                            tr.addClass('rx-floating-header');
                         });
                     }
 
@@ -63,14 +80,5 @@ angular.module('encore.ui.rxFloatingHeader', [])
             });
 
         },
-        controller: function ($scope, $window) {
-            this.registerHeader = function (headerRow) {
-                $scope.header = headerRow;
-                angular.element($window).bind('scroll', function () {
-                    $scope.updateHeaders();
-                    $scope.$apply();
-                });
-            };
-        }
     };
 });
