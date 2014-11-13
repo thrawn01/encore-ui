@@ -30,12 +30,14 @@ angular.module('encore.ui.rxScrollableTable', [])
                 return _getScale(style(elem).height);
             };
 
+            var getThInner = function () {
+                return _.filter($element[0].querySelectorAll('table th .th-inner'), function (th) {
+                    return !hidden(th);
+                });
+            };
+
             var element = $element[0];
             var scrollArea = angular.element(element.querySelectorAll('.scrollArea')[0]);
-            var thInner = _.filter($element[0].querySelectorAll('table th .th-inner'), function (th) {
-                return !hidden(th);
-            });
-            var jqThInner = _.map(thInner, angular.element);
 
             // Given a raw DOM element, check if it's currently hidden
             // This is a modified version of 
@@ -113,27 +115,29 @@ angular.module('encore.ui.rxScrollableTable', [])
             var headersAreFixed = $q.defer();
 
             function fixHeaderWidths() {
-                if (!$element.find('thead th .th-inner').length) {
-                    $element.find('thead th').wrapInner('<div class="th-inner"></div>');
+                if (!getThInner().length) {
+                    _.each(element.querySelectorAll('thead th'), function (th) {
+                        angular.element(angular.element(th).contents()).wrap('<div class="th-inner"></div>');
+                    });
                 }
-                if($element.find('thead th .th-inner:not(:has(.box))').length) {
-                    $element.find('thead th .th-inner:not(:has(.box))').addClass('box');
-                }
+                _.each(getThInner(), function (thInner) {
+                    angular.element(thInner).addClass('box');
+                });
                                                
                 var headerPos = 1;//  1 is the width of right border;
-                _.each(thInner, function (th) {
+                _.each(getThInner(), function (th) {
                     var jqTh = angular.element(th);
                     var jqParent = jqTh.parent();
                     var width = getWidth(jqParent[0]);
                         // if it's the last header, add space for the scrollbar equivalent unless it's centered
-                        lastCol = angular.element(_.last(_.reject($element.find('table th'), hidden))),
+                        lastCol = angular.element(_.last(_.reject(element.querySelectorAll('table th'), hidden))),
                         headerWidth = width;
                     if (lastCol.css('text-align') !== 'center') {
                         var scrollAreaHeight = getHeight(scrollArea[0]);
                         var tableHeight = getHeight($element.find('table')[0]);
                         var hasScrollbar = scrollAreaHeight < tableHeight;
                         if (lastCol[0] == jqParent[0] && hasScrollbar) {
-                            headerWidth += getWidth(scrollArea[0]) - getWidth($element.find('tbody tr')[0]);
+                            headerWidth += getWidth(scrollArea[0]) - getWidth(element.querySelectorAll('tbody tr')[0]);
                             headerWidth = Math.max(headerWidth, width);
                         }
                     }
@@ -159,7 +163,7 @@ angular.module('encore.ui.rxScrollableTable', [])
             }
 
             function _resetColumnsSize(tableWidth){
-                var ths = $element.find('table th'),
+                var ths = element.querySelectorAll('table th'),
                     lastCol = _.last(ths),
                     columnLength = ths.length;
 
@@ -212,8 +216,8 @@ angular.module('encore.ui.rxScrollableTable', [])
             $scope.sortAttr = $attrs.sortAttr;
 
             scrollArea.bind('scroll', function (ev) {
-                _.each(jqThInner, function (th) {
-                    th.css({ 'margin-left': 0 - ev.target.scrollLeft });
+                _.each(getThInner(), function (th) {
+                    angular.element(th).css({ 'margin-left': 0 - ev.target.scrollLeft });
                 });
             });
 
