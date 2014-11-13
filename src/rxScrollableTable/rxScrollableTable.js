@@ -30,21 +30,13 @@ angular.module('encore.ui.rxScrollableTable', [])
                 return _getScale(style(elem).height);
             };
 
-            // return a fresh array of $element.find('table th .th-inner')
-            var getThInner = function () {
-                return _.filter($element[0].querySelectorAll('table th .th-inner'), function (th) {
-                    return !hidden(th);
-                });
-            };
-
             var element = $element[0];
             var scrollArea = angular.element(element.querySelectorAll('.scrollArea')[0]);
-            var thInner = getThInner();
-            var jqThInner = _.map(thInner, angular.element);
-            $scope.$watch('thInner', function () {
-                jqThInner = _.map(thInner, angular.element);
+            var thInner = _.filter($element[0].querySelectorAll('table th .th-inner'), function (th) {
+                return !hidden(th);
             });
-            
+            var jqThInner = _.map(thInner, angular.element);
+
             // Given a raw DOM element, check if it's currently hidden
             // This is a modified version of 
             // http://stackoverflow.com/questions/9637943/non-jquery-equivalent-of-visible-in-javascript
@@ -121,15 +113,8 @@ angular.module('encore.ui.rxScrollableTable', [])
             var headersAreFixed = $q.defer();
 
             function fixHeaderWidths() {
-                if (!thInner.length) {
-                    var ths = $element.find('table th');
-                    _.each(ths, function (th) {
-                        th = angular.element(th);
-                        _.each(th.contents(), function (content) {
-                            angular.element(content).wrap('<div class="th-inner"></div>');
-                        });
-                    });
-                    thInner = getThInner();
+                if (!$element.find('thead th .th-inner').length) {
+                    $element.find('thead th').wrapInner('<div class="th-inner"></div>');
                 }
                 if($element.find('thead th .th-inner:not(:has(.box))').length) {
                     $element.find('thead th .th-inner:not(:has(.box))').addClass('box');
