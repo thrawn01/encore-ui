@@ -1,0 +1,31 @@
+<!-- Sample HTML goes here as a live example of how to the component can be used -->
+<div ng-controller="rxScrollableTableCtrl">
+    <rx-scrollable-table watch="visibleProjects">
+        <table class="table table-striped table-bordered">
+          <thead>
+            <tr>
+                <th col="facility" style="color:black;">Facility</th>
+                <th col="code" style="color:black;">Unit code</th>
+                <th col="cost" style="color:black;">Cost</th>
+                <th col="conditionRating" style="color:black;">Condition score</th>
+                <th col="extent" style="color:black;">Replace %</th>
+                <th col="planYear"  style="color:black;"comparator-fn="comparator">Plan year</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="response in visibleProjects | Paginate:pager" row-id="{{ response.facility }}" 
+                ng-class="{info: selected == response.facility}" >
+              <td>{{ response.facility }}</td>
+              <td>{{ response.code }}</td>
+              <td>{{ response.cost }}</td>
+              <td class="cr">{{ response.conditionRating }}</td>
+              <td>{{ response.extent }}</td>
+              <td>{{ response.planYear }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </rx-scrollable-table>
+      <div>
+          <rx-paginate page-tracking="pager"></rx-paginate>
+      </div>
+</div>
