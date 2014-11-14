@@ -118,9 +118,21 @@ angular.module('encore.ui.rxScrollableTable', [])
             function fixHeaderWidths() {
                 if (!getThInner().length) {
                     _.each(element.querySelectorAll('thead th'), function (th) {
-                        angular.element(angular.element(th).contents()).wrap('<div class="th-inner"><div class="box"></div></div>');
+                        // We're doing an implementation of jQuery's .wrapInner() here,
+                        // essentially doing th.wrapInner('<div class="th-inner"></div')
+                        var wrapper = angular.element('<div class="th-inner box"></div>');
+                        th.appendChild(wrapper[0]);
+                        while (th.firstChild !== wrapper[0]) {
+                            wrapper.append(th.firstChild);
+                        }
+                        
+                        //angular.element(angular.element(th).contents()).wrap('<div class="th-inner"></div>');
+                        //angular.element(angular.element(th).children()[0]).wrap('<div class="th-inner"></div>')
                     });
                 }
+
+                
+
                 var headerPos = 1;//  1 is the width of right border;
                 _.each(getThInner(), function (th) {
                     var jqTh = angular.element(th);
