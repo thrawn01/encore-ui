@@ -14,7 +14,8 @@ angular.module('encore.ui.rxScrollableTable', [])
         controller: function ($scope, $element, $attrs, $window) {
             // define an API for child directives to view and modify sorting parameters
             var _getScale = function (sizeCss){
-                return _.parseInt(sizeCss.replace(/px|%/, ''));
+                var size = sizeCss.replace(/px|%/, '');
+                return size ? _.parseInt(size) : 0;
             };
 
             // takes a raw DOM element
@@ -145,16 +146,16 @@ angular.module('encore.ui.rxScrollableTable', [])
                         title = jqParent.attr('title');
                     width = Math.max(minWidth, width);
                     headerWidth = Math.max(minWidth, headerWidth);
-                    jqTh.css('width', headerWidth);
+                    jqTh.css({ 'width': headerWidth + 'px'});
                     if (!title) {
-                        title = jqTh.children().length ? angular.element(th.querySelectorAll('.title .ng-scope')).html() : jqTh.html();
+                        title = jqTh.children().length ? angular.element(th.querySelectorAll('.ng-scope')).html() : jqTh.html();
                     }
                     jqTh.attr('title', title.trim());
 
                     //following are resize stuff, to made th-inner position correct.
                     //last column's width should be automaically, to avoid horizontal scroll.
                     if (lastCol[0] != jqParent[0]){
-                        jqParent.css({ 'width': width });
+                        jqParent.css({ 'width': width + 'px' });
                     }
                     jqTh.css({ 'left': headerPos });
                     headerPos += width;
