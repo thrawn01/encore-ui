@@ -118,13 +118,9 @@ angular.module('encore.ui.rxScrollableTable', [])
             function fixHeaderWidths() {
                 if (!getThInner().length) {
                     _.each(element.querySelectorAll('thead th'), function (th) {
-                        angular.element(angular.element(th).contents()).wrap('<div class="th-inner"></div>');
+                        angular.element(angular.element(th).contents()).wrap('<div class="th-inner"><div class="box"></div></div>');
                     });
                 }
-                _.each(getThInner(), function (thInner) {
-                    angular.element(thInner).addClass('box');
-                });
-                                               
                 var headerPos = 1;//  1 is the width of right border;
                 _.each(getThInner(), function (th) {
                     var jqTh = angular.element(th);
