@@ -19,7 +19,8 @@ angular.module('encore.ui.rxFloatingHeader', [])
 
             var tableHeight,
                 state = 'fixed',
-                seenFirstScroll = false;
+                seenFirstScroll = false,
+                clones = [];
 
             scope.header = angular.element(element.find('thead'));
             scope.trs = [];
@@ -27,9 +28,11 @@ angular.module('encore.ui.rxFloatingHeader', [])
             //scope.headerClone = scope.header.parent()[0].insertBefore(scope.header.clone()[0], scope.header[0]);
             _.each(scope.header.find('tr'), function(tr) {
                 tr = angular.element(tr);
-                tr.parent()[0].insertBefore(tr.clone()[0], tr[0]);
-                tr.css({ 'width': $window.getComputedStyle(tr[0]).width });
-                //scope.header.append(tr.clone());
+                var clone = tr.clone();
+                clones.push(clone);
+                //tr.parent()[0].insertBefore(clone[0], tr[0]);
+                tr.css({ 'width': '100%' });//$window.getComputedStyle(tr[0]).width });
+                //scope.header.append(clone);
                 tr.addClass('please-look-here');
                 scope.trs.push(tr);
             });
@@ -47,17 +50,25 @@ angular.module('encore.ui.rxFloatingHeader', [])
                 if ((scrollTop > offset.top) && (scrollTop < offset.top + tableHeight)){
                     if (state === 'fixed') {
                         state = 'float';
-                        //scope.header.addClass('rx-floating-header');
-                        _.each(scope.trs, function(tr) {
+                        var thWidths = [];
+                        _.each(scope.trs, function (tr) {
                             tr = angular.element(tr);
-                            tr.css({ 'width': $window.getComputedStyle(tr[0]).width });
-                            _.each(_.zip(tr.find('th'), scope.thWidths), function (pair) {
+                            thWidths = thWidths.concat(_.map(tr.find('th'), function (th) {
+                                return $window.getComputedStyle(th).width;
+                            }));
+                        });
+                        _.each(clones, function (clone) {
+                            scope.header.append(clone);
+                        });
+                        _.each(scope.trs, function (tr) {
+                            tr = angular.element(tr);
+                            tr.addClass('rx-floating-header');
+                            //tr.css({ 'width': $window.getComputedStyle(tr[0]).width });
+                            _.each(_.zip(tr.find('th'), thWidths), function (pair) {
                                 var th = pair[0];
                                 var width = pair[1];
-                                console.log('Setting width ' + width);
                                 angular.element(th).css({ 'width': width });
                             });
-                            tr.addClass('rx-floating-header');
                         });
                     }
 
@@ -66,8 +77,13 @@ angular.module('encore.ui.rxFloatingHeader', [])
                         state = 'fixed';
                         seenFirstScroll = true;
                         scope.header.removeClass('rx-floating-header');
-                        scope.thWidths = _.map(scope.header.find('th'), function (th) {
-                            return $window.getComputedStyle(th).width;
+                        _.each(scope.trs, function (tr) {
+                            tr.removeClass('rx-floating-header');
+                        });
+                        _.each(clones, function (clone) {
+                            if (clone[0].parentNode) {
+                                scope.header[0].removeChild(clone[0]);
+                            }
                         });
                     }
                 }
