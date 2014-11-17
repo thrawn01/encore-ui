@@ -20,21 +20,19 @@ angular.module('encore.ui.rxFloatingHeader', [])
             var tableHeight,
                 state = 'fixed',
                 seenFirstScroll = false,
-                clones = [];
+                clones = [],
+                trs = [],
+                ths = [],
+                header = angular.element(element.find('thead'));
 
-            scope.header = angular.element(element.find('thead'));
-            scope.trs = [];
-            // http://stackoverflow.com/questions/21788314/angularjs-implement-elements-before-method-without-jquery
-            //scope.headerClone = scope.header.parent()[0].insertBefore(scope.header.clone()[0], scope.header[0]);
-            _.each(scope.header.find('tr'), function(tr) {
+            // Grab all the original `tr` elements from the `thead`,
+            _.each(header.find('tr'), function (tr) {
                 tr = angular.element(tr);
                 var clone = tr.clone();
                 clones.push(clone);
-                //tr.parent()[0].insertBefore(clone[0], tr[0]);
-                tr.css({ 'width': '100%' });//$window.getComputedStyle(tr[0]).width });
-                //scope.header.append(clone);
-                tr.addClass('please-look-here');
-                scope.trs.push(tr);
+                tr.css({ 'width': '100%' });
+                trs.push(tr);
+                ths = ths.concat(_.map(tr.find('th'), angular.element));
             });
 
             scope.updateHeaders = function () {
@@ -50,25 +48,41 @@ angular.module('encore.ui.rxFloatingHeader', [])
                 if ((scrollTop > offset.top) && (scrollTop < offset.top + tableHeight)){
                     if (state === 'fixed') {
                         state = 'float';
-                        var thWidths = [];
-                        _.each(scope.trs, function (tr) {
-                            tr = angular.element(tr);
+                        var thWidths = [],
+                            trHeights = [];
+
+                        // Get the current width of each `th` and height of each `tr`
+                        // that we want to float
+                        _.each(trs, function (tr) {
+                            trHeights.push($window.getComputedStyle(tr[0]).height);
                             thWidths = thWidths.concat(_.map(tr.find('th'), function (th) {
                                 return $window.getComputedStyle(th).width;
                             }));
                         });
+
+                        // Put the cloned `tr` elements back into the DOM
                         _.each(clones, function (clone) {
-                            scope.header.append(clone);
+                            header.append(clone);
+                            scope.$digest();
                         });
-                        _.each(scope.trs, function (tr) {
+
+                        // Apply the rx-floating-header class to each `tr` and
+                        // set a correct `top` for each, to make sure they stack
+                        // properly
+                        var topOffset = 0;
+                        _.each(trs, function (tr, index) {
                             tr = angular.element(tr);
                             tr.addClass('rx-floating-header');
                             //tr.css({ 'width': $window.getComputedStyle(tr[0]).width });
-                            _.each(_.zip(tr.find('th'), thWidths), function (pair) {
-                                var th = pair[0];
-                                var width = pair[1];
-                                angular.element(th).css({ 'width': width });
-                            });
+                            tr.css({ 'top': topOffset });
+                            topOffset += trHeights[index];
+                        });
+
+                        // Explicitly set the widths of each `th` element
+                        _.each(_.zip(ths, thWidths), function (pair) {
+                            var th = pair[0];
+                            var width = pair[1];
+                            th.css({ 'width': width });
                         });
                     }
 
@@ -76,13 +90,15 @@ angular.module('encore.ui.rxFloatingHeader', [])
                     if (state === 'float' || !seenFirstScroll) {
                         state = 'fixed';
                         seenFirstScroll = true;
-                        scope.header.removeClass('rx-floating-header');
-                        _.each(scope.trs, function (tr) {
+                        _.each(trs, function (tr) {
                             tr.removeClass('rx-floating-header');
                         });
+
+                        // Detach each cloaned `tr` from the DOM,
+                        // but don't destroy it
                         _.each(clones, function (clone) {
                             if (clone[0].parentNode) {
-                                scope.header[0].removeChild(clone[0]);
+                                header[0].removeChild(clone[0]);
                             }
                         });
                     }
