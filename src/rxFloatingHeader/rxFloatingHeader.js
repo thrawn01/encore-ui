@@ -5,8 +5,7 @@ angular.module('encore.ui.rxFloatingHeader', [])
         scope: {},
         link: function (scope, table) {
 
-            var tableHeight,
-                state = 'fixed',
+            var state = 'fixed',
                 seenFirstScroll = false,
 
                 // The original <tr> elements
@@ -17,6 +16,7 @@ angular.module('encore.ui.rxFloatingHeader', [])
 
                 // Clones of the <tr> elements
                 clones = [],
+                maxHeight,
                 header = angular.element(table.find('thead'));
 
             // Grab all the original `tr` elements from the `thead`,
@@ -28,8 +28,13 @@ angular.module('encore.ui.rxFloatingHeader', [])
             });
 
             scope.updateHeaders = function () {
+                if (_.isUndefined(maxHeight)) {
+                    maxHeight = table[0].offsetHeight;
+                }
 
-                if (rxJq.shouldFloat(table)) {
+                maxHeight = _.max([maxHeight, table[0].offsetHeight]);
+                
+                if (rxJq.shouldFloat(table, maxHeight)) {
                     if (state === 'fixed') {
                         state = 'float';
                         var thWidths = [],
@@ -136,12 +141,13 @@ angular.module('encore.ui.rxFloatingHeader', [])
         return style(elem).height;
     };
 
-    var shouldFloat = function (elem) {
+    var shouldFloat = function (elem, maxHeight) {
         var elemOffset = offset(elem),
-            scrollTop = $document[0].body.scrollTop,
-            offsetHeight = elem[0].offsetHeight;
+            // Safari and Chrome both use body.scrollTop, but Firefox needs
+            // documentElement.scrollTop
+            scrollTop = $document[0].body.scrollTop || $document[0].documentElement.scrollTop;
 
-        return ((scrollTop > elemOffset.top) && (scrollTop < elemOffset.top + offsetHeight));
+        return ((scrollTop > elemOffset.top) && (scrollTop < elemOffset.top + maxHeight));
     };
 
     // bind `f` to the scroll event

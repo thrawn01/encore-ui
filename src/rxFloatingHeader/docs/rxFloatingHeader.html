@@ -1,5 +1,5 @@
 <!-- Sample HTML goes here as a live example of how to the component can be used -->
-<table rx-floating-area>
+<table rx-floating-area class="no-filter">
     <thead>
       <tr>
          <th>Column One Header</th>
@@ -31,7 +31,7 @@
          <td>table1 data6</td>
          <td>table1 data6</td>
       </tr>
-      <tr>
+      <tr class="middle-row">
          <td>table1 data7</td>
          <td>table1 data7</td>
       </tr>
@@ -52,10 +52,10 @@
 
   <p>
   A common pattern is to include a filter with tables. You can have that as part of the floating header by setting
-  it in a separate `<tr>` element.
+  it in a separate `&lttr&gt` element.
   </p>
 
-<table rx-floating-area>
+<table rx-floating-area class="filter">
     <thead>
       <tr>
           <th colspan="2">
