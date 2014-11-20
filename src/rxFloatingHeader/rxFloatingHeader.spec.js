@@ -27,3 +27,43 @@ describe('rxFloatingHeader', function () {
         expect(true).to.be.false;
     });
 });
+
+
+describe('rxJq', function () {
+    var rxjq;
+
+    var windowMock = {
+        getComputedStyle: sinon.stub()
+            .returns({ width: '10px', height: '20px' })
+    };
+
+    beforeEach(function () {
+        module('encore.ui.rxFloatingHeader');
+
+        module(function ($provide) {
+            $provide.value('$window', windowMock);
+        });
+
+        inject(function (rxJq) {
+            rxjq = rxJq;
+        });
+    });
+
+    it('should accept raw DOM objects', function () {
+        var div = angular.element('<div></div>'),
+            raw = div[0];
+
+        rxjq.width(raw);
+        expect(windowMock.getComputedStyle).to.have.been.calledWith(raw);
+    });
+
+    it('should accept jquery lite objects and convert them to raw DOM', function () {
+        var div = angular.element('<div></div>'),
+            raw = div[0];
+
+        rxjq.width(div);
+        expect(windowMock.getComputedStyle).to.have.been.calledWith(raw);
+        
+    });
+    
+});

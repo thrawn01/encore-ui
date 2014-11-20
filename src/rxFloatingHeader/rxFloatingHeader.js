@@ -121,8 +121,9 @@ angular.module('encore.ui.rxFloatingHeader', [])
         var body = doc.documentElement || doc.body;
         var scrollX = $window.pageXOffset || body.scrollLeft;
         var scrollY = $window.pageYOffset || body.scrollTop;
-        _x = rawDom.getBoundingClientRect().left + scrollX;
-        _y = rawDom.getBoundingClientRect().top + scrollY;
+        var rect = rawDom.getBoundingClientRect();
+        _x = rect.left + scrollX;
+        _y = rect.top + scrollY;
         return { left: _x, top:_y };
     };
 
