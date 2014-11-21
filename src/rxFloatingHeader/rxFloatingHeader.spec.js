@@ -2,8 +2,9 @@
 
 describe('rxFloatingHeader', function () {
     var scope, compile, rootScope, el;
-    var validTemplate = '<rx-floating-header></rx-floating-header>';
-
+    var validTemplate = '<table rx-floating-header>' +
+        '<thead><tr><th>Col 1</th><th>Col 2</th></thead>' +
+        '</table>';
     beforeEach(function () {
         // load module
         module('encore.ui.rxFloatingHeader');
