@@ -5,28 +5,16 @@
     position: fixed;
     z-index: 1;
     opacity: 0.96;
-    th {
-        background: rgba(135, 135, 135, 0.95);
-    }
-    .table-filters {
-        margin: 2px 0;
-    }
 }
 
-th.filter {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid #e1e0df;
-    border-bottom: 1px solid #6e6e6e;
-    border-left-width: 10px;
-    border-left-color: #6e6e6e;
-    button {
-        margin: 0;
-    }
-}
 
-// For servers list, align floating header with status column
+// For tables with filters, style filter th differently
 table.servers-list {
-    .rx-floating-header {
-        margin-left: -5px;
+    tr:nth-child(1) th {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #e1e0df;
+        button {
+            margin: 0;
+        }
     }
 }
