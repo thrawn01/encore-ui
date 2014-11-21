@@ -1,28 +1,18 @@
-var rxFloatingHeaderPage = require('../rxFloatingHeader.page.js').rxFloatingHeader;
-var ptor = protractor.getInstance();
-var expect = require('chai').use(require('chai-as-promised')).expect;
+var rxFloatingHeader = require('../rxFloatingHeader.page.js').rxFloatingHeader;
 
 describe('rxFloatingHeader', function () {
     var table, tr, middleRow, middleRowY, initialY;
 
-    var scrollToY = function (y) {
-        var command = 'window.scrollTo(0, ' + y.toString() + ');';
-        return ptor.executeScript(command);
-    };
-
     describe('One header row table', function () {
         before(function () {
             demoPage.go('#/component/rxFloatingHeader');
-            table = rxFloatingHeaderPage.initialize($('table[rx-floating-area].no-filter'));
-            tr = table.rootElement.$('thead tr');
-            middleRow = table.rootElement.$('.middle-row');
-            middleRow.getLocation().then(function (loc) {
-                middleRowY = loc.y;
+            table = $('table[rx-floating-area].no-filter');
+            tr = table.$('thead tr:first-of-type');
+            middleRow = table.$('.middle-row');
+            protractor.promise.all([middleRow.getLocation(), tr.getLocation()]).then(function (locations) {
+                middleRowY = locations[0].y;
+                initialY = locations[1].y;
             });
-            tr.getLocation().then(function (loc) {
-                initialY = loc.y;
-            });
-            
         });
 
         it('should show element', function () {
@@ -30,65 +20,51 @@ describe('rxFloatingHeader', function () {
         });
 
         it('should float header after scrolling to middle of table', function () {
-            scrollToY(middleRowY).then(function () {
-                tr.getLocation().then(function (loc) {
-                    expect(loc.y).to.equal(middleRowY);
-                });
-            });
+            rxFloatingHeader.scrollToElement(middleRow);
+            expect(rxFloatingHeader.compareYLocations(tr, middleRowY)).to.eventually.be.true;
         });
 
         it('should put the header back when scrolling to the top', function () {
-            scrollToY(0).then(function () {
-                tr.getLocation().then(function (loc) {
-                    expect(loc.y).to.equal(initialY);
-                });
-            });
+            rxFloatingHeader.scrollToElement($('.page-titles'));
+            expect(rxFloatingHeader.compareYLocations(tr, initialY)).to.eventually.be.true;
         });
     });
 
     describe('Multi header row table', function () {
         var filterHeader, titlesHeader, initialFilterY, filterHeight;
+
         before(function () {
-            demoPage.go('#/component/rxFloatingHeader');
-            table = rxFloatingHeaderPage.initialize($('table[rx-floating-area].filter'));
-            var trs = table.rootElement.$$('thead tr');
+            table = $('table[rx-floating-area].filter');
+            var trs = table.$$('thead tr');
             filterHeader = trs.get(0);
             titlesHeader = trs.get(1);
-            middleRow = table.rootElement.$('.middle-row');
-            middleRow.getLocation().then(function (loc) {
-                middleRowY = loc.y;
-            });
-            filterHeader.getLocation().then(function (loc) {
-                initialFilterY = loc.y;
-            });
-            filterHeader.getSize().then(function (size) {
-                filterHeight = size.height;
-            });
-            
-        });
-        
-        it('should float header after scrolling to middle of table', function () {
-            scrollToY(middleRowY).then(function () {
-                filterHeader.getLocation().then(function (loc) {
-                    expect(loc.y).to.equal(middleRowY);
-                });
-                titlesHeader.getLocation().then(function (loc) {
-                    expect(loc.y).to.equal(middleRowY + filterHeight);
-                });
+            middleRow = table.$('.middle-row');
+            var locationPromises = [middleRow.getLocation(), filterHeader.getLocation(), filterHeader.getSize()];
+            protractor.promise.all(locationPromises).then(function (locations) {
+                middleRowY = locations[0].y;
+                initialFilterY = locations[1].y;
+                filterHeight = locations[2].height;
             });
         });
 
-        it('should put the header back when scrolling to the top', function () {
-            scrollToY(0).then(function () {
-                filterHeader.getLocation().then(function (loc) {
-                    expect(loc.y).to.equal(initialFilterY);
-                });
-                titlesHeader.getLocation().then(function (loc) {
-                    expect(loc.y).to.equal(initialFilterY + filterHeight);
-                });
-            });
+        it('should float header after scrolling to middle of table', function () {
+            rxFloatingHeader.scrollToElement(middleRow);
+            expect(rxFloatingHeader.compareYLocations(filterHeader, middleRowY)).to.eventually.be.true;
         });
-        
+
+        it('should have the right distance between the float header and the middle of the table', function () {
+            expect(rxFloatingHeader.compareYLocations(titlesHeader, middleRowY + filterHeight)).to.eventually.be.true;
+        });
+
+        it('should put the header back when scrolling to the top', function () {
+            rxFloatingHeader.scrollToElement($('.page-titles'));
+            expect(rxFloatingHeader.compareYLocations(filterHeader, initialFilterY)).to.eventually.be.true;
+        });
+
+        it('should have the right distance between the title header and the initial starting point', function () {
+            expect(rxFloatingHeader.compareYLocations(titlesHeader, initialFilterY + filterHeight)).to.eventually.be.true;
+        });
+
     });
 
 });
