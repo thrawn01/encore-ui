@@ -27,6 +27,14 @@ angular.module('encore.ui.rxFloatingHeader', [])
                 ths = ths.concat(_.map(tr.find('th'), angular.element));
             });
 
+            _.each(ths, function (th) {
+                var input = th.find('input');
+                if (input.length) {
+                    th.addClass('filter-header');
+                    angular.element(input).addClass('filter-box');
+                }
+            });
+
             scope.updateHeaders = function () {
                 if (_.isUndefined(maxHeight)) {
                     maxHeight = table[0].offsetHeight;
@@ -111,6 +119,14 @@ angular.module('encore.ui.rxFloatingHeader', [])
  * All methods take jquery-lite wrapped elements as arguments
  */
 .factory('rxJq', function ($document, $window) {
+
+    var scrollTop = function () {
+        // Safari and Chrome both use body.scrollTop, but Firefox needs
+        // documentElement.scrollTop
+        var doc = $document[0];
+        var scrolltop = $window.pageYOffset || doc.body.scrollTop || doc.documentElement.scrollTop || 0;
+        return scrolltop;
+    };
     
     var offset = function (elm) {
         //http://cvmlrobotics.blogspot.co.at/2013/03/angularjs-get-element-offset-position.html
@@ -120,7 +136,7 @@ angular.module('encore.ui.rxFloatingHeader', [])
         var doc = $document[0];
         var body = doc.documentElement || doc.body;
         var scrollX = $window.pageXOffset || body.scrollLeft;
-        var scrollY = $window.pageYOffset || body.scrollTop;
+        var scrollY = scrollTop();
         var rect = rawDom.getBoundingClientRect();
         _x = rect.left + scrollX;
         _y = rect.top + scrollY;
@@ -144,11 +160,9 @@ angular.module('encore.ui.rxFloatingHeader', [])
 
     var shouldFloat = function (elem, maxHeight) {
         var elemOffset = offset(elem),
-            // Safari and Chrome both use body.scrollTop, but Firefox needs
-            // documentElement.scrollTop
-            scrollTop = $document[0].body.scrollTop || $document[0].documentElement.scrollTop;
+            scrolltop = scrollTop();
 
-        return ((scrollTop > elemOffset.top) && (scrollTop < elemOffset.top + maxHeight));
+        return ((scrolltop > elemOffset.top) && (scrolltop < elemOffset.top + maxHeight));
     };
 
     // bind `f` to the scroll event
@@ -158,6 +172,7 @@ angular.module('encore.ui.rxFloatingHeader', [])
 
     return {
         offset: offset,
+        scrollTop: scrollTop,
         width: width,
         height: height,
         shouldFloat: shouldFloat,

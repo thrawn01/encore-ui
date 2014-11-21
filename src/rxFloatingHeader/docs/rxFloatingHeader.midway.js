@@ -62,7 +62,8 @@ describe('rxFloatingHeader', function () {
         });
 
         it('should have the right distance between the title header and the initial starting point', function () {
-            expect(rxFloatingHeader.compareYLocations(titlesHeader, initialFilterY + filterHeight)).to.eventually.be.true;
+            expect(rxFloatingHeader.compareYLocations(titlesHeader, initialFilterY + filterHeight))
+                .to.eventually.be.true;
         });
 
     });
