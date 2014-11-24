@@ -1,5 +1,5 @@
 angular.module('encore.ui.rxFloatingHeader', [])
-.directive('rxFloatingArea', function (rxJq) {
+.directive('rxFloatingHeader', function (rxJq) {
     return {
         restrict: 'A',
         scope: {},
@@ -101,7 +101,6 @@ angular.module('encore.ui.rxFloatingHeader', [])
                         _.each(trs, function (tr) {
                             tr.removeClass('rx-floating-header');
                         });
-
 
                         // Detach each cloaned `tr` from the DOM,
                         // but don't destroy it
