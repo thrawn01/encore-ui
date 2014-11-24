@@ -16,6 +16,9 @@ angular.module('encore.ui.rxFloatingHeader', [])
 
                 // Clones of the <tr> elements
                 clones = [],
+
+                // any <input> elements in the <thead>
+                inputs = [],
                 maxHeight,
                 header = angular.element(table.find('thead'));
 
@@ -27,11 +30,13 @@ angular.module('encore.ui.rxFloatingHeader', [])
                 ths = ths.concat(_.map(tr.find('th'), angular.element));
             });
 
+            // Apply .filter-header to any <input> elements 
             _.each(ths, function (th) {
                 var input = th.find('input');
                 if (input.length) {
                     th.addClass('filter-header');
-                    angular.element(input).addClass('filter-box');
+                    input.addClass('filter-box');
+                    inputs.push(input);
                 }
             });
 
@@ -85,9 +90,18 @@ angular.module('encore.ui.rxFloatingHeader', [])
                     if (state === 'float' || !seenFirstScroll) {
                         state = 'fixed';
                         seenFirstScroll = true;
+
+                        // Make sure that an input filter doesn't have focus when
+                        // we re-dock the header, otherwise the browser will scroll
+                        // the screen back up ot the input
+                        _.each(inputs, function (input) {
+                            input[0].blur();
+                        });
+
                         _.each(trs, function (tr) {
                             tr.removeClass('rx-floating-header');
                         });
+
 
                         // Detach each cloaned `tr` from the DOM,
                         // but don't destroy it
