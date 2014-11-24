@@ -1,5 +1,5 @@
 angular.module('encore.ui.rxFloatingHeader', [])
-.directive('rxFloatingArea', function ($window, $document, rxJq) {
+.directive('rxFloatingArea', function (rxJq) {
     return {
         restrict: 'A',
         scope: {},
