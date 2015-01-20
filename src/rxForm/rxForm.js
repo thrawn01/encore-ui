@@ -29,7 +29,7 @@ angular.module('encore.ui.rxForm', ['ngSanitize'])
         link: function (scope, el) {
             var inputSelectors = [
                 '.field-input-wrapper input',
-                '.field-input-wrapper select',
+                '.field-input-wrapper .field-select',
                 '.field-input-wrapper textarea'
             ];
             inputSelectors = inputSelectors.join(', ');
