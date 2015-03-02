@@ -34,8 +34,8 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             var table = parentElement;
 
             scope.updateItemsPerPage = function (itemsPerPage) {
-                scope.pageTracking.itemsPerPage = itemsPerPage;
-                scope.pageTracking.pageNumber = 0;
+                scope.pageTracking.setItemsPerPage(itemsPerPage);
+                scope.pageTracking.goToPage(0);
 
                 // Set itemsPerPage as the new default value for
                 // all future pagination tables
@@ -160,6 +160,14 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 
         settings.isEmpty = function () {
             return settings.total === 0;
+        };
+
+        settings.setItemsPerPage = function (numItems) {
+            settings.itemsPerPage = numItems;
+        };
+
+        settings.isItemsPerPage = function (numItems) {
+            return settings.itemsPerPage === numItems;
         };
 
         this.settings = settings;

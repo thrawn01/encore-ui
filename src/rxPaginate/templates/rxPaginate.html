@@ -29,7 +29,7 @@
             <div>
                 Show
                 <ul>
-                    <li ng-repeat="i in pageTracking.itemSizeList"><button ng-disabled="i == pageTracking.itemsPerPage" class="pagination-per-page-button" ng-disabled="i == pageTracking.itemsPerPage" ng-click="updateItemsPerPage(i)">{{ i }}</button> </li>
+                    <li ng-repeat="i in pageTracking.itemSizeList"><button ng-disabled="pageTracking.isItemsPerPage(i)" class="pagination-per-page-button" ng-disabled="i == pageTracking.itemsPerPage" ng-click="updateItemsPerPage(i)">{{ i }}</button> </li>
                 </ul>
             </div>
         </li>
