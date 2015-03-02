@@ -53,7 +53,7 @@ describe('Pagination', function () {
             var link = item.find('a').eq(0);
             var span = item.find('span').eq(0);
 
-            scope.pager.pageNumber = 3;
+            scope.pager.goToPage(3);
 
             scope.$digest();
 
@@ -64,7 +64,7 @@ describe('Pagination', function () {
             // clicking link should move to first page
             helpers.clickElement(link[0]);
 
-            expect(scope.pager.pageNumber).to.equal(0);
+            expect(scope.pager.isFirstPage()).to.be.true;
         });
 
         it('should disable "first" link on first page', function () {
@@ -82,7 +82,7 @@ describe('Pagination', function () {
             var link = item.find('a').eq(0);
             var span = item.find('span').eq(0);
 
-            scope.pager.pageNumber = 3;
+            scope.pager.goToPage(3);
 
             scope.$digest();
 
@@ -93,7 +93,7 @@ describe('Pagination', function () {
             // clicking link should move to first page
             helpers.clickElement(link[0]);
 
-            expect(scope.pager.pageNumber).to.equal(2);
+            expect(scope.pager.isPage(2)).to.be.true;
         });
 
         it('should disable "prev" link on first page', function () {
@@ -128,7 +128,7 @@ describe('Pagination', function () {
             helpers.clickElement(link[0]);
 
             expect(item.hasClass('active'), 'link should be inactive').to.be.true;
-            expect(scope.pager.pageNumber).to.equal(1);
+            expect(scope.pager.isPage(1)).to.be.true;
         });
 
         it('should have # of page numbers as configured', function () {
@@ -148,11 +148,11 @@ describe('Pagination', function () {
             // clicking link should move to first page
             helpers.clickElement(link[0]);
 
-            expect(scope.pager.pageNumber).to.equal(1);
+            expect(scope.pager.isPage(1)).to.be.true;
         });
 
         it('should disable "next" link on last page', function () {
-            scope.pager.pageNumber = scope.pager.totalPages - 1;
+            scope.pager.goToLastPage();
 
             scope.$digest();
 
@@ -180,11 +180,11 @@ describe('Pagination', function () {
             // clicking link should move to last page
             helpers.clickElement(link[0]);
 
-            expect(scope.pager.pageNumber).to.equal(scope.pager.totalPages - 1);
+            expect(scope.pager.isLastPage()).to.be.true;
         });
 
         it('should disable "last" link on last page', function () {
-            scope.pager.pageNumber = scope.pager.totalPages - 1;
+            scope.pager.goToLastPage();
 
             scope.$digest();
 

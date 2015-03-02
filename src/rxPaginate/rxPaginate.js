@@ -88,7 +88,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 .factory('PageTracking', function (LocalStorage) {
 
     function PageTrackingObject (opts) {
-        this.settings = _.defaults(_.cloneDeep(opts), {
+        var settings = _.defaults(_.cloneDeep(opts), {
             itemsPerPage: 200,
             pagesToShow: 5,
             pageNumber: 0,
@@ -98,8 +98,8 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             itemSizeList: [50, 200, 350, 500]
         });
 
-        var itemsPerPage = this.settings.itemsPerPage;
-        var itemSizeList = this.settings.itemSizeList;
+        var itemsPerPage = settings.itemsPerPage;
+        var itemSizeList = settings.itemSizeList;
 
         // If itemSizeList doesn't contain the desired itemsPerPage,
         // then find the right spot in itemSizeList and insert the
@@ -114,8 +114,55 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         // If the user has chosen a desired itemsPerPage, make sure we're respecting that
         // However, a value specified in the options will take precedence
         if (!opts.itemsPerPage && !_.isNaN(selectedItemsPerPage) && _.contains(itemSizeList, selectedItemsPerPage)) {
-            this.settings.itemsPerPage = selectedItemsPerPage;
+            settings.itemsPerPage = selectedItemsPerPage;
         }
+
+        settings.isFirstPage = function () {
+            return settings.isPage(0);
+        };
+
+        settings.isLastPage = function () {
+            return settings.isPage(settings.totalPages - 1);
+        };
+
+        settings.isPage = function (n) {
+            return settings.pageNumber === n;
+        };
+        
+        settings.isNLastPage = function (n) {
+            return settings.totalPages - 1 === n;
+        };
+        
+        settings.currentPage = function () {
+            return settings.pageNumber;
+        };
+        
+        // 0-based page number
+        settings.goToPage = function (n) {
+            settings.pageNumber = n;
+        };
+
+        settings.goToFirstPage = function () {
+            settings.goToPage(0);
+        };
+
+        settings.goToLastPage = function () {
+            settings.goToPage(settings.totalPages - 1);
+        };
+
+        settings.goToPrevPage = function () {
+            settings.goToPage(settings.currentPage() - 1);
+        };
+
+        settings.goToNextPage = function () {
+            settings.goToPage(settings.currentPage() + 1);
+        };
+
+        settings.isEmpty = function () {
+            return settings.total === 0;
+        };
+
+        this.settings = settings;
     }
 
     return {
