@@ -28,4 +28,29 @@
         <button ng-click="removeServers()" class="button sm negative">Remove first 2 servers</button>
         <button ng-click="addServers()" class="button sm positive">Add 2 servers</button>
     </p>
+    
+    
+    <table class="table-striped">
+        <thead>
+            <tr>
+                <th class="column-title" style="width:10em;">Name</th>
+                <th class="column-title">OS</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="server in lazyServers | LazyPaginate:lazyPager">
+                <td>
+                    {{server.name}}
+                </td>
+                <td>{{server.os}}</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr class="paginate-area">
+                <td colspan="12">
+                    <rx-paginate page-tracking="lazyPager"></rx-paginate>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
 </div>

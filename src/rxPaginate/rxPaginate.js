@@ -35,7 +35,6 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 
             scope.updateItemsPerPage = function (itemsPerPage) {
                 scope.pageTracking.setItemsPerPage(itemsPerPage);
-                scope.pageTracking.goToPage(0);
 
                 // Set itemsPerPage as the new default value for
                 // all future pagination tables
@@ -87,7 +86,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 */
 .factory('PageTracking', function (LocalStorage) {
 
-    function PageTrackingObject (opts) {
+    function PageTrackingObject (opts, lazyPager) {
         var settings = _.defaults(_.cloneDeep(opts), {
             itemsPerPage: 200,
             pagesToShow: 5,
@@ -97,6 +96,11 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             showAll: false,
             itemSizeList: [50, 200, 350, 500]
         });
+
+        lazyPager = lazyPager || {
+            getItems: _.noop,
+            totalItems: _.noop
+        };
 
         var itemsPerPage = settings.itemsPerPage;
         var itemSizeList = settings.itemSizeList;
@@ -140,6 +144,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         // 0-based page number
         settings.goToPage = function (n) {
             settings.pageNumber = n;
+            lazyPager.getItems(n, settings.itemsPerPage);
         };
 
         settings.goToFirstPage = function () {
@@ -164,6 +169,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 
         settings.setItemsPerPage = function (numItems) {
             settings.itemsPerPage = numItems;
+            settings.goToPage(0);
         };
 
         settings.isItemsPerPage = function (numItems) {
@@ -174,9 +180,9 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
     }
 
     return {
-        createInstance: function (options) {
+        createInstance: function (options, lazyPager) {
             options = options ? options : {};
-            var tracking = new PageTrackingObject(options);
+            var tracking = new PageTrackingObject(options, lazyPager);
             return tracking.settings;
         },
 
@@ -200,7 +206,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 *
 * @returns {Object} The list of items for the current page in the PageTracking object
 */
-.filter('Paginate', function (PageTracking) {
+.filter('Paginate', function (PageTracking, rxPaginateUtils) {
     return function (items, pager) {
         if (!pager) {
             pager = PageTracking.createInstance();
@@ -210,29 +216,52 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             return items;
         }
         if (items) {
-            pager.total = items.length;
-            pager.totalPages = Math.ceil(pager.total / pager.itemsPerPage);
-
-            // We were previously on the last page, but enough items were deleted
-            // to reduce the total number of pages. We should now jump to whatever the
-            // new last page is
-            // When loading items over the network, our first few times through here
-            // will have totalPages===0. We do the _.max to ensure that
-            // we never set pageNumber to -1
-            if (pager.pageNumber + 1 > pager.totalPages) {
-                pager.pageNumber = _.max([0, pager.totalPages - 1]);
-            }
-
-            var first = pager.pageNumber * pager.itemsPerPage;
-            var added = first + pager.itemsPerPage;
-            var last = (added > items.length) ? items.length : added;
-
-            pager.first = first + 1;
-            pager.last = last;
-
-            return items.slice(first, last);
+             
+            var firstLast = rxPaginateUtils.updatePager(pager, items.length);
+            return items.slice(firstLast.first, firstLast.last);
         }
     };
+})
+
+.filter('LazyPaginate', function (PageTracking, rxPaginateUtils) {
+    return function (items, pager) {
+        rxPaginateUtils.updatePager(pager, items.totalNumberOfItems);
+        return items;
+    };
+})
+
+.factory('rxPaginateUtils', function () {
+    var rxPaginateUtils = {};
+
+    rxPaginateUtils.updatePager = function (pager, totalNumItems)  {
+
+        pager.total = totalNumItems;
+        pager.totalPages = Math.ceil(totalNumItems / pager.itemsPerPage);
+
+        // We were previously on the last page, but enough items were deleted
+        // to reduce the total number of pages. We should now jump to whatever the
+        // new last page is
+        // When loading items over the network, our first few times through here
+        // will have totalPages===0. We do the _.max to ensure that
+        // we never set pageNumber to -1
+        if (pager.pageNumber + 1 > pager.totalPages) {
+            pager.pageNumber = _.max([0, pager.totalPages - 1]);
+        }
+
+        var first = pager.pageNumber * pager.itemsPerPage;
+        var added = first + pager.itemsPerPage;
+        var last = (added > totalNumItems) ? totalNumItems : added;
+
+        pager.first = first + 1;
+        pager.last = last;
+
+        return {
+            first: first,
+            last: last
+        };
+    };
+
+    return rxPaginateUtils;
 })
 
 /**

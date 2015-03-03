@@ -33,4 +33,23 @@ function rxPaginateCtrl ($scope, PageTracking) {
     $scope.addServers = function () {
         $scope.servers = $scope.servers.concat(makeServers(2));
     };
+    
+    var allLazyServers = makeServers(101);
+
+    var serverInterface = {
+        getItems: function (pageNumber, itemsPerPage) {
+            var first = pageNumber * itemsPerPage;
+            var added = first + itemsPerPage;
+            var last = (added > allLazyServers.length) ? allLazyServers.length : added;
+
+            first = first;
+            last = last;
+
+            $scope.lazyServers = allLazyServers.slice(first, last);
+            $scope.lazyServers.totalNumberOfItems = allLazyServers.length;
+        }
+    };
+
+    $scope.lazyPager = PageTracking.createInstance({}, serverInterface);
+    serverInterface.getItems($scope.lazyPager.currentPage(), $scope.lazyPager.itemsPerPage);
 }
