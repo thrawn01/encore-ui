@@ -30,10 +30,10 @@
     </p>
     
     
-    <table class="table-striped">
+    <table rx-floating-header class="table-striped">
         <thead>
             <tr>
-                <th colspan="2" class="filter-header">
+                <th colspan="2">
                     <input placeholder="Filter by any..." style="font-style: italic" ng-model="searchText">
                     <button class="pull-right button" ng-click="clearFilter()">
                         Clear Filter
@@ -46,7 +46,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="server in lazyServers | LazyPaginate:lazyFilter:lazyPager:searchText:sort.predicate:sort.reverse">
+            <tr ng-repeat="server in lazyServers | LazyPaginate:lazyPager">
                 <td>
                     {{server.name}}
                 </td>
@@ -56,7 +56,7 @@
         <tfoot>
             <tr class="paginate-area">
                 <td colspan="12">
-                    <rx-paginate page-tracking="lazyPager"></rx-paginate>
+                    <rx-paginate page-tracking="lazyPager" filter-text="searchText"></rx-paginate>
                 </td>
             </tr>
         </tfoot>

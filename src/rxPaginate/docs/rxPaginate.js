@@ -48,8 +48,13 @@ function rxPaginateCtrl ($scope, $q, $timeout, $filter, rxPaginateUtils, PageTra
                 first = first;
                 last = last;
 
-                $scope.lazyServers = $filter('filter')(allLazyServers, filterText).slice(first, last);
-                $scope.lazyServers.totalNumberOfItems = allLazyServers.length;
+                var filteredServers = $filter('filter')(allLazyServers, filterText);
+                $scope.lazyServers = filteredServers.slice(first, last);
+                $scope.lazyServers.pageNumber = pageNumber;
+                if (filterText) {
+                    $scope.lazyServers.pageNumber = 0;
+                }
+                $scope.lazyServers.totalNumberOfItems = filteredServers.length;
 
                 deferred.resolve($scope.lazyServers);
             }, 3000);
@@ -58,7 +63,5 @@ function rxPaginateCtrl ($scope, $q, $timeout, $filter, rxPaginateUtils, PageTra
     };
 
     $scope.searchText = '';
-    $scope.lazyFilter = rxPaginateUtils.buildLazyFilter();
     $scope.lazyPager = PageTracking.createInstance({}, serverInterface);
-    serverInterface.getItems($scope.lazyPager.currentPage(), $scope.lazyPager.itemsPerPage);
 }
