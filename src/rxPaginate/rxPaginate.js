@@ -13,7 +13,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
  * @param {number} numberOfPages This is the maximum number of pages that the
  * page object will display at a time.
  */
-.directive('rxPaginate', function (PageTracking) {
+.directive('rxPaginate', function (PageTracking, rxPaginateUtils) {
     return {
         templateUrl: 'templates/rxPaginate.html',
         replace: true,
@@ -21,6 +21,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         scope: {
             pageTracking: '=',
             numberOfPages: '@',
+            serverInterface: '=?',
             filterText: '=?',
             sortPredicate: '=?',
             sortDirection: '=?'
@@ -49,27 +50,38 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             };
 
             scope.loadingState = '';
-            var setLoading = function (state) {
-                scope.loadingState = state;
-            };
 
-            var filterAndSort = function () {
-                return {
-                    filterText: scope.filterText,
-                    sortPredicate: scope.sortPredicate,
-                    sortDirection: scope.sortDirection
-                };
-            };
-            scope.pageTracking.notifyLoading(setLoading);
-            scope.pageTracking.filterAndSortAccess(filterAndSort);
+            if (!_.isUndefined(scope.serverInterface)) {
+                var getItems = function (pageNumber, itemsPerPage) {
+                    scope.loadingState = 'loading';
+                    var response = scope.serverInterface.getItems(pageNumber,
+                                                   itemsPerPage,
+                                                   scope.filterText,
+                                                   scope.sortPredicate,
+                                                   scope.sortDirection);
 
-            if (!_.isUndefined(scope.filterText)) {
-                scope.$watch('filterText', _.debounce(function (newText) {
-                    scope.$apply(function () {
-                        scope.pageTracking.updateFilterText(newText);
+                    response.then(function (items) {
+                        scope.loadingState = '';
+                        scope.pageTracking.pageNumber = items.pageNumber;
+                        rxPaginateUtils.updatePager(scope.pageTracking, items.totalNumberOfItems);
                     });
-                }, 500));
+                };
+        
+                if (!_.isUndefined(scope.pageTracking)) {
+                    scope.pageTracking.updateItems(getItems);
+                }
+
+                if (!_.isUndefined(scope.filterText)) {
+                    scope.$watch('filterText', _.debounce(function () {
+                        scope.$apply(function () {
+                            var pageNumber = 0;
+                            getItems(pageNumber, scope.pageTracking.itemsPerPage);
+                        });
+                    }, 500));
+                }
+
             }
+
         }
     };
 })
@@ -110,9 +122,9 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 * PageTracking.createInstance({showAll: true, itemsPerPage: 15});
 * </pre>
 */
-.factory('PageTracking', function ($q, LocalStorage, rxPaginateUtils) {
+.factory('PageTracking', function ($q, LocalStorage) {
 
-    function PageTrackingObject (opts, serverAPI) {
+    function PageTrackingObject (opts) {
         var settings = _.defaults(_.cloneDeep(opts), {
             itemsPerPage: 200,
             pagesToShow: 5,
@@ -122,14 +134,6 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             showAll: false,
             itemSizeList: [50, 200, 350, 500]
         });
-
-        serverAPI = serverAPI || {
-            getItems: function () {
-                var items = [];
-                items.totalNumberOfItems = 0;
-                return $q.when(items);
-            }
-        };
 
         var itemsPerPage = settings.itemsPerPage;
         var itemSizeList = settings.itemSizeList;
@@ -149,18 +153,6 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         if (!opts.itemsPerPage && !_.isNaN(selectedItemsPerPage) && _.contains(itemSizeList, selectedItemsPerPage)) {
             settings.itemsPerPage = selectedItemsPerPage;
         }
-
-        var filterAndSort = function () {
-            return {
-                filterText: '',
-                sortPredicate: '',
-                sortDirection: ''
-            };
-        };
-
-        settings.filterAndSortAccess = function (fn) {
-            filterAndSort = fn;
-        };
 
         settings.isFirstPage = function () {
             return settings.isPage(0);
@@ -182,40 +174,15 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             return settings.pageNumber;
         };
         
+        var updateItems = _.noop;
+        settings.updateItems = function (fn) {
+            updateItems = fn;
+        };
+
         // 0-based page number
         settings.goToPage = function (n) {
             settings.pageNumber = n;
-            settings.setLoading();
-            var val = filterAndSort();
-            serverAPI.getItems(n, settings.itemsPerPage, val.filterText, val.sortPredicate, val.sortDirection)
-                .then(settings.clearLoading);
-        };
-
-        settings.updateFilterText = function (text, sortPredicate, sortReverse) {
-            settings.setLoading();
-            var response = serverAPI.getItems(0, // Always go to page 0 when filter text changes
-                                               settings.itemsPerPage,
-                                               text,
-                                               sortPredicate,
-                                               sortReverse);
-            response.then(function (items) {
-                settings.pageNumber = items.pageNumber;
-                rxPaginateUtils.updatePager(settings, items.totalNumberOfItems);
-                settings.clearLoading();
-            });
-        };
-
-        // The sorting has changed, but not the filter text, so we'll stay
-        // on the same page
-        settings.updateSort = function (text, sortPredicate, sortReverse) {
-            settings.setLoading();
-            var response = serverAPI.getItems(settings.currentPage(),
-                               settings.itemsPerPage,
-                               text,
-                               sortPredicate,
-                               sortReverse);
-            response.then(settings.clearLoading);
-            
+            updateItems(settings.currentPage(), settings.itemsPerPage);
         };
 
         settings.goToFirstPage = function () {
@@ -247,28 +214,15 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             return settings.itemsPerPage === numItems;
         };
 
-        var notifyLoading = _.noop;
-        settings.notifyLoading = function (fn) {
-            notifyLoading = fn;
-        };
-
-        settings.setLoading = function () {
-            notifyLoading('loading');
-        };
-
-        settings.clearLoading = function () {
-            notifyLoading('');
-        };
-
         this.settings = settings;
 
         settings.goToPage(settings.pageNumber);
     }
 
     return {
-        createInstance: function (options, serverAPI) {
+        createInstance: function (options) {
             options = options ? options : {};
-            var tracking = new PageTrackingObject(options, serverAPI);
+            var tracking = new PageTrackingObject(options);
             return tracking.settings;
         },
 
