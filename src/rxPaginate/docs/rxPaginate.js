@@ -1,7 +1,7 @@
 /*jshint unused:false*/
 
 // This file is used to help build the 'demo' documentation page and should be updated with example code
-function rxPaginateCtrl ($scope, PageTracking) {
+function rxPaginateCtrl ($scope, $q, $timeout, $filter, rxPaginateUtils, PageTracking) {
     $scope.sorter = {
         predicate: 'id',
         reverse: false
@@ -37,19 +37,28 @@ function rxPaginateCtrl ($scope, PageTracking) {
     var allLazyServers = makeServers(101);
 
     var serverInterface = {
-        getItems: function (pageNumber, itemsPerPage) {
-            var first = pageNumber * itemsPerPage;
-            var added = first + itemsPerPage;
-            var last = (added > allLazyServers.length) ? allLazyServers.length : added;
+        getItems: function (pageNumber, itemsPerPage, filterText, sortPredicate, sortReverse) {
+            var deferred = $q.defer();
 
-            first = first;
-            last = last;
+            $timeout(function () {
+                var first = pageNumber * itemsPerPage;
+                var added = first + itemsPerPage;
+                var last = (added > allLazyServers.length) ? allLazyServers.length : added;
 
-            $scope.lazyServers = allLazyServers.slice(first, last);
-            $scope.lazyServers.totalNumberOfItems = allLazyServers.length;
+                first = first;
+                last = last;
+
+                $scope.lazyServers = $filter('filter')(allLazyServers, filterText).slice(first, last);
+                $scope.lazyServers.totalNumberOfItems = allLazyServers.length;
+
+                deferred.resolve($scope.lazyServers);
+            }, 3000);
+            return deferred.promise;
         }
     };
 
+    $scope.searchText = '';
+    $scope.lazyFilter = rxPaginateUtils.buildLazyFilter();
     $scope.lazyPager = PageTracking.createInstance({}, serverInterface);
     serverInterface.getItems($scope.lazyPager.currentPage(), $scope.lazyPager.itemsPerPage);
 }

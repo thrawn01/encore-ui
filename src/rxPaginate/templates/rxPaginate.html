@@ -1,5 +1,8 @@
-<div class="rx-paginate">
-    <ul class="pagination">
+<div class="rx-paginate" ng-switch="loadingState">
+    <ul ng-switch-when="loading">
+        <li><span class="page-links">Loading <span class="rx-spinner"></span></span></li>
+    </ul>
+    <ul ng-switch-default class="pagination">
         <li><a tabindex="0" ng-click="scrollToTop()">Back to top</a></li>
         <li>Showing {{ pageTracking | PaginatedItemsSummary}} items</li>
         <span class="page-links">
@@ -34,6 +37,5 @@
             </div>
         </li>
     </ul>
-
 
 </div>

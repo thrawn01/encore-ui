@@ -33,12 +33,20 @@
     <table class="table-striped">
         <thead>
             <tr>
+                <th colspan="2" class="filter-header">
+                    <input placeholder="Filter by any..." style="font-style: italic" ng-model="searchText">
+                    <button class="pull-right button" ng-click="clearFilter()">
+                        Clear Filter
+                    </button>
+                </th>
+            </tr>
+            <tr>
                 <th class="column-title" style="width:10em;">Name</th>
                 <th class="column-title">OS</th>
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="server in lazyServers | LazyPaginate:lazyPager">
+            <tr ng-repeat="server in lazyServers | LazyPaginate:lazyFilter:lazyPager:searchText:sort.predicate:sort.reverse">
                 <td>
                     {{server.name}}
                 </td>
