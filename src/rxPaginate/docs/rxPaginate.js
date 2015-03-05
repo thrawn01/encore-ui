@@ -34,7 +34,7 @@ function rxPaginateCtrl ($scope, $q, $timeout, $filter, rxPaginateUtils, PageTra
         $scope.servers = $scope.servers.concat(makeServers(2));
     };
     
-    var allLazyServers = makeServers(101);
+    var allLazyServers = makeServers(701);
 
     var serverInterface = {
         getItems: function (pageNumber, itemsPerPage, filterText, sortPredicate, sortReverse) {
@@ -49,7 +49,7 @@ function rxPaginateCtrl ($scope, $q, $timeout, $filter, rxPaginateUtils, PageTra
                 last = last;
 
                 var filteredServers = $filter('filter')(allLazyServers, filterText);
-                $scope.lazyServers = filteredServers.slice(first, last);
+                $scope.lazyServers = filteredServers.slice(first, last + 100);
                 $scope.lazyServers.pageNumber = pageNumber;
                 if (filterText) {
                     $scope.lazyServers.pageNumber = 0;

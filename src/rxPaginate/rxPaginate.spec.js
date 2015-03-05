@@ -294,14 +294,9 @@ describe('Pagination', function () {
         beforeEach(function () {
             module('encore.ui.rxPaginate');
 
-            // Provide any mocks needed
-            module(function ($provide) {
-                pager = angular.copy(mockPageTracking);
-                $provide.value('PageTracking', pager);
-            });
-
-            inject(function ($filter) {
+            inject(function ($filter, PageTracking) {
                 paginate = $filter('Paginate');
+                pager = PageTracking.createInstance(angular.copy(mockPageTracking));
             });
         });
 
