@@ -64,5 +64,5 @@ function rxPaginateCtrl ($scope, $q, $timeout, $filter, rxPaginateUtils, PageTra
 
     $scope.searchText = '';
     $scope.serverInterface = serverInterface;
-    $scope.lazyPager = PageTracking.createInstance();
+    $scope.lazyPager = PageTracking.createInstance({ itemsPerPage: 25 });
 }

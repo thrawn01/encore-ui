@@ -67,7 +67,12 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 
                     return response.then(function (items) {
                         scope.loadingState = '';
-                        rxPaginateUtils.updatePager(scope.pageTracking, items.totalNumberOfItems, items, true);
+                        var updateCache = true;
+                        rxPaginateUtils.updatePager(scope.pageTracking,
+                                                    items.pageNumber,
+                                                    items.totalNumberOfItems,
+                                                    items,
+                                                    updateCache);
                         cachedPages = scope.pageTracking.cachedPages;
                         return items.pageNumber;
                     });
@@ -301,7 +306,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             
             pager.total = items.length;
             var updateCache = false;
-            var firstLast = rxPaginateUtils.updatePager(pager, items.length, items, updateCache);
+            var firstLast = rxPaginateUtils.updatePager(pager, pager.currentPage(), items.length, items, updateCache);
             return items.slice(firstLast.first, firstLast.last);
         }
     };
@@ -313,7 +318,8 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             var info;
             var updateCache = false;
             if (!pager.waitingForItems) {
-                info = rxPaginateUtils.updatePager(pager, items.totalNumberOfItems, items, updateCache);
+                var pageNumber = pager.currentPage();
+                info = rxPaginateUtils.updatePager(pager, pageNumber, items.totalNumberOfItems, items, updateCache);
             } else {
                 info = rxPaginateUtils.firstAndLast(pager.pageNumber, pager.itemsPerPage, items.totalNumberOfItems);
             }
@@ -337,9 +343,8 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         
     };
 
-    rxPaginateUtils.updatePager = function (pager, totalNumItems, items, updateCache)  {
+    rxPaginateUtils.updatePager = function (pager, pageNumber, totalNumItems, items, updateCache)  {
 
-        var pageNumber = !_.isUndefined(items.pageNumber) ? items.pageNumber : pager.pageNumber;
         pager.total = totalNumItems;
 
         var info = rxPaginateUtils.firstAndLast(pageNumber, pager.itemsPerPage, totalNumItems);
