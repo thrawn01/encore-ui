@@ -147,7 +147,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 
         var total = settings.total;
         Object.defineProperty(settings, 'total', {
-            get: function() {
+            get: function () {
                     return total;
                 },
             set: function (newTotal) {
@@ -165,7 +165,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         });
         
         Object.defineProperty(settings, 'totalPages', {
-            get: function() { return Math.ceil(settings.total / settings.itemsPerPage); }
+            get: function () { return Math.ceil(settings.total / settings.itemsPerPage); }
         });
 
         // If itemSizeList doesn't contain the desired itemsPerPage,
@@ -205,6 +205,10 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         };
         
         var updateItems = function (pageNumber) {
+            // This is the function that gets used when doing UI pagination,
+            // thus we're not waiting for the page number to come back from a service,
+            // so we should set it right away.
+            settings.pageNumber = pageNumber;
             return $q.when(pageNumber);
         };
         settings.updateItems = function (fn) {
