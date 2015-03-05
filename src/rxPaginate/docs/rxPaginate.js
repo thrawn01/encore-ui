@@ -57,7 +57,7 @@ function rxPaginateCtrl ($scope, $q, $timeout, $filter, rxPaginateUtils, PageTra
                 $scope.lazyServers.totalNumberOfItems = filteredServers.length;
 
                 deferred.resolve($scope.lazyServers);
-            }, 3000);
+            }, 1000);
             return deferred.promise;
         }
     };

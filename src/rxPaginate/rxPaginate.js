@@ -215,9 +215,10 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         settings.goToPage = function (n) {
             // Set the pageNumber to n. Then when updateItems comes back, set it again,
             // in case the server changed stuff up and had to send us to a new page
-            settings.pageNumber = n;
+            settings.waitingForItems = true;
             return updateItems(n, settings.itemsPerPage).then(function (pageNumber) {
                 settings.pageNumber = pageNumber;
+                settings.waitingForItems = false;
                 return pageNumber;
             });
         };
@@ -305,8 +306,13 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 .filter('LazyPaginate', function (rxPaginateUtils) {
     return function (items, pager) {
         if (items && pager) {
+            var info;
             var updateCache = false;
-            var info = rxPaginateUtils.updatePager(pager, items.totalNumberOfItems, items, updateCache);
+            if (!pager.waitingForItems) {
+                info = rxPaginateUtils.updatePager(pager, items.totalNumberOfItems, items, updateCache);
+            } else {
+                info = rxPaginateUtils.firstAndLast(pager.pageNumber, pager.itemsPerPage, items.totalNumberOfItems);
+            }
             return items.slice(info.first - pager.cacheOffset, info.last - pager.cacheOffset);
         }
     };
@@ -315,21 +321,34 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 .factory('rxPaginateUtils', function () {
     var rxPaginateUtils = {};
 
+    rxPaginateUtils.firstAndLast = function (pageNumber, itemsPerPage, totalNumItems) {
+        var first = pageNumber * itemsPerPage;
+        var added = first + itemsPerPage;
+        var last = (added > totalNumItems) ? totalNumItems : added;
+
+        return {
+            first: first,
+            last: last,
+        };
+        
+    };
+
     rxPaginateUtils.updatePager = function (pager, totalNumItems, items, updateCache)  {
 
+        var pageNumber = !_.isUndefined(items.pageNumber) ? items.pageNumber : pager.pageNumber;
         pager.total = totalNumItems;
 
-        var first = pager.pageNumber * pager.itemsPerPage;
-        var added = first + pager.itemsPerPage;
-        var last = (added > totalNumItems) ? totalNumItems : added;
+        var info = rxPaginateUtils.firstAndLast(pageNumber, pager.itemsPerPage, totalNumItems);
+        var first = info.first;
+        var last = info.last;
 
         pager.first = first + 1;
         pager.last = last;
 
         if (updateCache) {
-            var numberOfPages = Math.ceil(items.length / pager.itemsPerPage);
-            var cachedPages = _.range(pager.pageNumber, pager.pageNumber + numberOfPages);
-            pager.cachedPages = !_.isEmpty(cachedPages) ? cachedPages : [pager.pageNumber];
+            var numberOfPages = Math.floor(items.length / pager.itemsPerPage);
+            var cachedPages = numberOfPages ? _.range(pageNumber, pageNumber + numberOfPages) : [pageNumber];
+            pager.cachedPages = !_.isEmpty(cachedPages) ? cachedPages : [pageNumber];
             pager.cacheOffset = pager.cachedPages[0] * pager.itemsPerPage;
         }
 

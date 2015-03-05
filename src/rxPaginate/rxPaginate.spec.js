@@ -315,6 +315,7 @@ describe('Pagination', function () {
 
         it('should switch page if item deletion causes us to be past last page', function () {
             // Go to last page
+            debugger;
             pager.pageNumber = pager.totalPages - 1;
             var lastPageNumber = pager.pageNumber;
             expect(paginate(items, pager), 'two items on last page').to.eql([15,16]);
