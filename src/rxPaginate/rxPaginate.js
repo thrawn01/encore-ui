@@ -13,11 +13,12 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
  * @param {number} numberOfPages This is the maximum number of pages that the
  * page object will display at a time.
  */
-.directive('rxPaginate', function ($q, $compile, PageTracking, rxPaginateUtils, rxDOMHelper) {
+.directive('rxPaginate', function ($q, $compile, PageTracking, rxPaginateUtils) {
     return {
         templateUrl: 'templates/rxPaginate.html',
         replace: true,
         restrict: 'E',
+        require: '?^rxLoadingOverlay',
         scope: {
             pageTracking: '=',
             numberOfPages: '@',
@@ -26,8 +27,12 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             sortPredicate: '=?',
             sortDirection: '=?'
         },
-        link: function (scope, element) {
+        link: function (scope, element, attrs, rxLoadingOverlayCtrl) {
 
+            rxLoadingOverlayCtrl = rxLoadingOverlayCtrl || {
+                show: _.noop,
+                hide: _.noop
+            };
             // We need to find the `<table>` that contains
             // this `<rx-paginate>`
             var parentElement = element.parent();
@@ -36,20 +41,6 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             }
 
             var table = parentElement;
-
-
-            // The table needs to be relatively positioned for the absolutely positioned
-            // div to go on top of it
-            table.css({ position: 'relative' });
-
-            var loadingBlockHTML = '<div ng-show="loadingState==\'loading\'" class="loading-overlay">' +
-                                        '<p>Loading</p>' +
-                                    '</div>';
-            var loadingBlock;
-            $compile(loadingBlockHTML)(scope, function (clone) {
-                loadingBlock = clone;
-                table.after(clone);
-            });
 
             scope.updateItemsPerPage = function (itemsPerPage) {
                 scope.pageTracking.setItemsPerPage(itemsPerPage);
@@ -72,16 +63,8 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
                     if (_.contains(cachedPages, pageNumber)) {
                         return $q.when(pageNumber);
                     }
-                    var offset = rxDOMHelper.offset(table);
-                    var width = rxDOMHelper.width(table);
-                    var height = rxDOMHelper.height(table);
-                    loadingBlock.css({
-                        top: offset.top + 'px',
-                        left: offset.left + 'px',
-                        width: width,
-                        height: height,
-                    });
                     scope.loadingState = 'loading';
+                    rxLoadingOverlayCtrl.show();
                     var response = scope.serverInterface.getItems(pageNumber,
                                                    itemsPerPage,
                                                    scope.filterText,
@@ -100,6 +83,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
                     })
                     .finally(function () {
                         scope.loadingState = '';
+                        rxLoadingOverlayCtrl.hide();
                     });
                 };
         
@@ -121,13 +105,35 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
     };
 })
 
+/**
+ *
+ * @ngdoc directive
+ * @name encore.ui.rxPaginate:rxLoadingOverlay
+ * @restrict A
+ * @description
+ * This directive can be used to show and hide a "loading" overlay on top
+ * of any given element. Add this as an attribute to your element, and then
+ * other sibling or child elements can require this as a controller. The controller
+ * exposes `show()` and `hide()` methods, which will show/hide the overlay
+ *
+ */
 .directive('rxLoadingOverlay', function ($compile, rxDOMHelper) {
     return {
         restrict: 'A',
         scope: true,
-        controller: function ($scope) {
-            $scope.showLoadingOverlay = false;
+        controller: function ($scope, $element) {
             this.show = function () {
+                var offset = rxDOMHelper.offset($element);
+                var width = rxDOMHelper.width($element);
+                var height = rxDOMHelper.height($element);
+                if (!_.isUndefined($scope.loadingBlock)) {
+                    $scope.loadingBlock.css({
+                        top: offset.top + 'px',
+                        left: offset.left + 'px',
+                        width: width,
+                        height: height,
+                    });
+                }
                 $scope.showLoadingOverlay = true;
             };
 
@@ -136,7 +142,19 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             };
         },
         link: function (scope, element) {
+            // This target element has to have `position: relative` otherwise the overlay
+            // will not sit on top of it
+            element.css({ position: 'relative' });
+            scope.showLoadingOverlay = false;
 
+            var loadingBlockHTML = '<div ng-show="showLoadingOverlay" class="loading-overlay">' +
+                                        '<p>Loading</p>' +
+                                    '</div>';
+
+            $compile(loadingBlockHTML)(scope, function (clone) {
+                scope.loadingBlock = clone;
+                element.after(clone);
+            });
         }
     };
 })
@@ -364,6 +382,8 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
                 var pageNumber = pager.currentPage();
                 info = rxPaginateUtils.updatePager(pager, pageNumber, items.totalNumberOfItems, items, updateCache);
             } else {
+                // We're waiting on a request for new items to come in, so just keep the current set of items
+                // displayed
                 info = rxPaginateUtils.firstAndLast(pager.pageNumber, pager.itemsPerPage, items.totalNumberOfItems);
             }
             return items.slice(info.first - pager.cacheOffset, info.last - pager.cacheOffset);
