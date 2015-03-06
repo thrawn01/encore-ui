@@ -13,7 +13,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
  * @param {number} numberOfPages This is the maximum number of pages that the
  * page object will display at a time.
  */
-.directive('rxPaginate', function ($q, PageTracking, rxPaginateUtils) {
+.directive('rxPaginate', function ($q, $compile, PageTracking, rxPaginateUtils, rxDOMHelper) {
     return {
         templateUrl: 'templates/rxPaginate.html',
         replace: true,
@@ -37,6 +37,20 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 
             var table = parentElement;
 
+
+            // The table needs to be relatively positioned for the absolutely positioned
+            // div to go on top of it
+            table.css({ position: 'relative' });
+
+            var loadingBlockHTML = '<div ng-show="loadingState==\'loading\'" class="loading-overlay">' +
+                                        '<p>Loading</p>' +
+                                    '</div>';
+            var loadingBlock;
+            $compile(loadingBlockHTML)(scope, function (clone) {
+                loadingBlock = clone;
+                table.after(clone);
+            });
+
             scope.updateItemsPerPage = function (itemsPerPage) {
                 scope.pageTracking.setItemsPerPage(itemsPerPage);
 
@@ -58,6 +72,15 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
                     if (_.contains(cachedPages, pageNumber)) {
                         return $q.when(pageNumber);
                     }
+                    var offset = rxDOMHelper.offset(table);
+                    var width = rxDOMHelper.width(table);
+                    var height = rxDOMHelper.height(table);
+                    loadingBlock.css({
+                        top: offset.top + 'px',
+                        left: offset.left + 'px',
+                        width: width,
+                        height: height,
+                    });
                     scope.loadingState = 'loading';
                     var response = scope.serverInterface.getItems(pageNumber,
                                                    itemsPerPage,
@@ -66,7 +89,6 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
                                                    scope.sortDirection);
 
                     return response.then(function (items) {
-                        scope.loadingState = '';
                         var updateCache = true;
                         rxPaginateUtils.updatePager(scope.pageTracking,
                                                     items.pageNumber,
@@ -75,12 +97,13 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
                                                     updateCache);
                         cachedPages = scope.pageTracking.cachedPages;
                         return items.pageNumber;
+                    })
+                    .finally(function () {
+                        scope.loadingState = '';
                     });
                 };
         
-                if (!_.isUndefined(scope.pageTracking)) {
-                    scope.pageTracking.updateItems(getItems);
-                }
+                scope.pageTracking.updateItems(getItems);
 
                 if (!_.isUndefined(scope.filterText)) {
                     scope.$watch('filterText', _.debounce(function () {
@@ -93,6 +116,26 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
                 }
 
             }
+
+        }
+    };
+})
+
+.directive('rxLoadingOverlay', function ($compile, rxDOMHelper) {
+    return {
+        restrict: 'A',
+        scope: true,
+        controller: function ($scope) {
+            $scope.showLoadingOverlay = false;
+            this.show = function () {
+                $scope.showLoadingOverlay = true;
+            };
+
+            this.hide = function () {
+                $scope.showLoadingOverlay = false;
+            };
+        },
+        link: function (scope, element) {
 
         }
     };
