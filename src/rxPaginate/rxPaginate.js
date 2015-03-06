@@ -152,7 +152,10 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             scope.showLoadingOverlay = false;
 
             var loadingBlockHTML = '<div ng-show="showLoadingOverlay" class="loading-overlay">' +
-                                        '<p>Loading</p>' +
+                                        '<div class="loading-text-wrapper">' +
+                                            '<i class="fa fa-fw fa-lg fa-spin fa-circle-o-notch"></i>' +
+                                            '<div class="loading-text">Loading...</div>' +
+                                        '</div>' +
                                     '</div>';
 
             $compile(loadingBlockHTML)(scope, function (clone) {
