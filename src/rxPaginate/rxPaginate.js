@@ -58,6 +58,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 
             scope.show = function () {
                 rxLoadingOverlayCtrl.show();
+                scope.loadingState = 'loading';
             };
 
             if (!_.isUndefined(scope.serverInterface)) {
