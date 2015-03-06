@@ -56,6 +56,10 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 
             scope.loadingState = '';
 
+            scope.show = function () {
+                rxLoadingOverlayCtrl.show();
+            };
+
             if (!_.isUndefined(scope.serverInterface)) {
                 var cachedPages = [];
 
