@@ -128,7 +128,7 @@ describe('Pagination', function () {
             // clicking link should move to first page
             helpers.clickElement(link[0]);
 
-            scope.$digest();
+            scope.$apply();
 
             expect(scope.pager.isPage(1)).to.be.true;
             expect(item.hasClass('active'), 'link for page 2 should be active').to.be.true;
@@ -163,9 +163,9 @@ describe('Pagination', function () {
             var link = item.find('a').eq(0);
             var span = item.find('span').eq(0);
 
-            expect(item.hasClass('disabled')).to.be.true;
-            expect(link.hasClass('ng-hide')).to.be.true;
-            expect(span.hasClass('ng-hide')).to.be.false;
+            expect(item.hasClass('disabled'), 'item is disabled').to.be.true;
+            expect(link.hasClass('ng-hide'), 'link has ng-hide').to.be.true;
+            expect(span.hasClass('ng-hide'), 'span does not have ng-hide').to.be.false;
         });
 
         it('should link to "last" link non-last page', function () {
@@ -185,7 +185,7 @@ describe('Pagination', function () {
 
             expect(scope.pager.isLastPage()).to.be.true;
         });
-
+            
         it('should disable "last" link on last page', function () {
             scope.pager.goToLastPage();
 

@@ -221,25 +221,6 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         var itemsPerPage = settings.itemsPerPage;
         var itemSizeList = settings.itemSizeList;
 
-        var total = settings.total;
-        Object.defineProperty(settings, 'total', {
-            get: function () {
-                    return total;
-                },
-            set: function (newTotal) {
-                    total = newTotal;
-                    if (settings.pageNumber + 1 > settings.totalPages && newTotal != settings.totalPages) {
-                        // We were previously on the last page, but enough items were deleted
-                        // to reduce the total number of pages. We should now jump to whatever the
-                        // new last page is
-                        // When loading items over the network, our first few times through here
-                        // will have totalPages===0. We do the _.max to ensure that
-                        // we never set pageNumber to -1
-                        settings.goToLastPage();
-                    }
-                }
-        });
-        
         Object.defineProperty(settings, 'totalPages', {
             get: function () { return Math.ceil(settings.total / settings.itemsPerPage); }
         });
@@ -288,14 +269,13 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             var data = {
                 items: [],
                 pageNumber: pageNumber,
-                totalNumberOfItems: 0
+                totalNumberOfItems: settings.total
             };
             return $q.when(data);
         };
         settings.updateItemsFn = function (fn) {
             updateItems = fn;
         };
-
 
         // Used by rxPaginate to tell the pager that it should grab
         // new items from itemsPromise. Set updateCache to false
@@ -424,6 +404,15 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         if (items) {
             
             pager.total = items.length;
+            // We were previously on the last page, but enough items were deleted
+            // to reduce the total number of pages. We should now jump to whatever the
+            // new last page is
+            // When loading items over the network, our first few times through here
+            // will have totalPages===0. We do the _.max to ensure that
+            // we never set pageNumber to -1
+            if (pager.pageNumber + 1 > pager.totalPages) {
+                pager.goToLastPage();
+            }
             var updateCache = false;
             var firstLast = rxPaginateUtils.updatePager(pager, pager.currentPage(), items.length, items, updateCache);
             return items.slice(firstLast.first, firstLast.last);
