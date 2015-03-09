@@ -282,7 +282,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         
         var updateItems = function (pageNumber) {
             // This is the function that gets used when doing UI pagination,
-            // thus we're not waiting for the page number to come back from a service,
+            // thus we're not waiting for the pageNumber to come back from a service,
             // so we should set it right away.
             settings.pageNumber = pageNumber;
             var data = {

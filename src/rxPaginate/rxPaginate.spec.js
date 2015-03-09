@@ -131,7 +131,7 @@ describe('Pagination', function () {
             scope.$digest();
 
             expect(scope.pager.isPage(1)).to.be.true;
-            expect(item.hasClass('active'), 'link should be active').to.be.true;
+            expect(item.hasClass('active'), 'link for page 2 should be active').to.be.true;
         });
 
         it('should have # of page numbers as configured', function () {
