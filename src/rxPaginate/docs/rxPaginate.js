@@ -49,14 +49,18 @@ function rxPaginateCtrl ($scope, $q, $timeout, $filter, rxPaginateUtils, PageTra
                 last = last;
 
                 var filteredServers = $filter('filter')(allLazyServers, filterText);
-                $scope.lazyServers = filteredServers.slice(first, last + 100);
-                $scope.lazyServers.pageNumber = pageNumber;
+                var lazyServers = filteredServers.slice(first, last + 100);
+                    
                 if (filterText) {
-                    $scope.lazyServers.pageNumber = 0;
+                    pageNumber = 0;
                 }
-                $scope.lazyServers.totalNumberOfItems = filteredServers.length;
+                var response = {
+                    items: lazyServers,
+                    pageNumber: pageNumber,
+                    totalNumberOfItems: filteredServers.length
+                };
 
-                deferred.resolve($scope.lazyServers);
+                deferred.resolve(response);
             }, 1000);
             return deferred.promise;
         }

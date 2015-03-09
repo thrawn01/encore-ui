@@ -128,8 +128,10 @@ describe('Pagination', function () {
             // clicking link should move to first page
             helpers.clickElement(link[0]);
 
-            expect(item.hasClass('active'), 'link should be inactive').to.be.true;
+            scope.$digest();
+
             expect(scope.pager.isPage(1)).to.be.true;
+            expect(item.hasClass('active'), 'link should be active').to.be.true;
         });
 
         it('should have # of page numbers as configured', function () {

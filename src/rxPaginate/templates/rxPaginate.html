@@ -4,7 +4,6 @@
     </ul>
     <ul ng-switch-default class="pagination">
         <li><a tabindex="0" ng-click="scrollToTop()">Back to top</a></li>
-        <li><a ng-click="show()">Show</a></li>
         <li>Showing {{ pageTracking | PaginatedItemsSummary}} items</li>
         <span class="page-links">
             <li ng-class="{disabled: pageTracking.isFirstPage()}" class="pagination-first">

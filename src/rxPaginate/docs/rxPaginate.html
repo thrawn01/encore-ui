@@ -1,5 +1,4 @@
 <div ng-controller="rxPaginateCtrl">
-    <!--
     <table class="table-striped">
         <thead>
             <tr>
@@ -29,7 +28,6 @@
         <button ng-click="removeServers()" class="button sm negative">Remove first 2 servers</button>
         <button ng-click="addServers()" class="button sm positive">Add 2 servers</button>
     </p>
-    -->
     
     <table rx-floating-header rx-loading-overlay class="table-striped">
         <thead>
@@ -47,7 +45,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="server in lazyServers | LazyPaginate:lazyPager">
+            <tr ng-repeat="server in lazyPager.items">
                 <td>
                     {{server.name}}
                 </td>
