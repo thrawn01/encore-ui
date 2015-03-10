@@ -38,7 +38,7 @@ exports.rxPaginate = function (options) {
             if (options.cssSelector === undefined) {
                 pagination = rxPaginate.main;
             } else {
-                pagination = rxPaginate.initialize(options.cssSelector);
+                pagination = rxPaginate.initialize($(options.cssSelector));
             }
         });
 

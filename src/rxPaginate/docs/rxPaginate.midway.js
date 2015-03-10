@@ -8,7 +8,8 @@ describe('rxPaginate', function () {
 
     describe('exercises', exercise.rxPaginate({
         pageSizes: [3, 50, 200, 350, 500],
-        defaultPageSize: 3
+        defaultPageSize: 3,
+        cssSelector: '.demo-ui-pagination .rx-paginate'
     }));
 
 });
