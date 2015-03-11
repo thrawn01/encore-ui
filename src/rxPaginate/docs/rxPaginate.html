@@ -1,5 +1,5 @@
 <div ng-controller="rxPaginateCtrl">
-    <table class="table-striped">
+    <table class="table-striped demo-ui-pagination">
         <thead>
             <tr>
                 <th class="column-title" style="width:10em;">Name</th>
@@ -28,8 +28,9 @@
         <button ng-click="removeServers()" class="button sm negative">Remove first 2 servers</button>
         <button ng-click="addServers()" class="button sm positive">Add 2 servers</button>
     </p>
-    
-    <table rx-floating-header rx-loading-overlay class="table-striped">
+   
+    <button ng-click="lazyPager.refresh()" class="button sm">Refresh</button>
+    <table rx-floating-header rx-loading-overlay class="table-striped demo-api-pagination">
         <thead>
             <tr>
                 <th colspan="2">

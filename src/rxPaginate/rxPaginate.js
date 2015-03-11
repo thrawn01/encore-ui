@@ -24,7 +24,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             numberOfPages: '@',
             serverInterface: '=?',
             filterText: '=?',
-            sortPredicate: '=?',
+            sortColumn: '=?',
             sortDirection: '=?'
         },
         link: function (scope, element, attrs, rxLoadingOverlayCtrl) {
@@ -54,42 +54,51 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
                 table[0].scrollIntoView(true);
             };
 
-            var setLoading = function () {
-                rxLoadingOverlayCtrl.show();
-                scope.loadingState = 'loading';
-                
-            };
-
-            var clearLoading = function () {
-                rxLoadingOverlayCtrl.hide();
-                scope.loadingState = '';
-            };
-
+            // Everything here is restricted to using server-side pagination
             if (!_.isUndefined(scope.serverInterface)) {
+                var setLoading = function () {
+                    rxLoadingOverlayCtrl.show();
+                    scope.loadingState = 'loading';
+                    
+                };
+
+                var clearLoading = function () {
+                    rxLoadingOverlayCtrl.hide();
+                    scope.loadingState = '';
+                };
+
+                var params = function () {
+                    return {
+                        filterText: scope.filterText,
+                        sortColumn: scope.sortPredicate,
+                        sortDirection: scope.sortDirection
+                    };
+                };
+
                 var getItems = function (pageNumber, itemsPerPage) {
                     setLoading();
                     var response = scope.serverInterface.getItems(pageNumber,
                                                    itemsPerPage,
-                                                   scope.filterText,
-                                                   scope.sortPredicate,
-                                                   scope.sortDirection);
-
+                                                   params());
                     return response.finally(clearLoading);
                 };
         
                 // Register the getItems function with the PageTracker
                 scope.pageTracking.updateItemsFn(getItems);
 
-                if (!_.isUndefined(scope.filterText)) {
-                    // Whenever the filter text changes (modulo a debounce), tell
-                    // the PageTracker that it should go grab new items
-                    scope.$watch('filterText', _.debounce(function () {
-                        scope.$apply(function () {
-                            var pageNumber = 0;
-                            scope.pageTracking.newItems(getItems(pageNumber, scope.pageTracking.itemsPerPage));
-                        });
-                    }, 500));
-                }
+                var notifyPageTracking = function () {
+                    var pageNumber = 0;
+                    scope.pageTracking.newItems(getItems(pageNumber, scope.pageTracking.itemsPerPage));
+                };
+
+                // Whenever the filter text changes (modulo a debounce), tell
+                // the PageTracker that it should go grab new items
+                scope.$watch('filterText', _.debounce(function () {
+                    scope.$apply(notifyPageTracking);
+                }, 500));
+
+                scope.$watch('sortColumn', notifyPageTracking);
+                scope.$watch('sortDirection', notifyPageTracking);
 
             }
 
@@ -110,6 +119,13 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
  *
  */
 .directive('rxLoadingOverlay', function ($compile, rxDOMHelper) {
+    var loadingBlockHTML = '<div ng-show="showLoadingOverlay" class="loading-overlay">' +
+                                '<div class="loading-text-wrapper">' +
+                                    '<i class="fa fa-fw fa-lg fa-spin fa-circle-o-notch"></i>' +
+                                    '<div class="loading-text">Loading...</div>' +
+                                '</div>' +
+                            '</div>';
+
     return {
         restrict: 'A',
         scope: true,
@@ -138,13 +154,6 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             // will not sit on top of it
             element.css({ position: 'relative' });
             scope.showLoadingOverlay = false;
-
-            var loadingBlockHTML = '<div ng-show="showLoadingOverlay" class="loading-overlay">' +
-                                        '<div class="loading-text-wrapper">' +
-                                            '<i class="fa fa-fw fa-lg fa-spin fa-circle-o-notch"></i>' +
-                                            '<div class="loading-text">Loading...</div>' +
-                                        '</div>' +
-                                    '</div>';
 
             $compile(loadingBlockHTML)(scope, function (clone) {
                 scope.loadingBlock = clone;
@@ -208,22 +217,8 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         // whatever chunk of data the API decided to send us
         settings.localItems = [];
 
-        // This returns the slice of data for whatever current page the user is on.
-        Object.defineProperty(settings, 'items', {
-            get: function () {
-                var info = rxPaginateUtils.firstAndLast(settings.pageNumber, settings.itemsPerPage, settings.total);
-                return settings.localItems.slice(info.first - settings.cacheOffset, info.last - settings.cacheOffset);
-            }
-        });
-    
-        rxPaginateUtils.updateCache(settings, 0, settings.localItems);
-
         var itemsPerPage = settings.itemsPerPage;
         var itemSizeList = settings.itemSizeList;
-
-        Object.defineProperty(settings, 'totalPages', {
-            get: function () { return Math.ceil(settings.total / settings.itemsPerPage); }
-        });
 
         // If itemSizeList doesn't contain the desired itemsPerPage,
         // then find the right spot in itemSizeList and insert the
@@ -240,6 +235,96 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         if (!opts.itemsPerPage && !_.isNaN(selectedItemsPerPage) && _.contains(itemSizeList, selectedItemsPerPage)) {
             settings.itemsPerPage = selectedItemsPerPage;
         }
+        
+        // This returns the slice of data for whatever current page the user is on.
+        Object.defineProperty(settings, 'items', {
+            get: function () {
+                var info = rxPaginateUtils.firstAndLast(settings.pageNumber, settings.itemsPerPage, settings.total);
+                return settings.localItems.slice(info.first - settings.cacheOffset, info.last - settings.cacheOffset);
+            }
+        });
+    
+        Object.defineProperty(settings, 'totalPages', {
+            get: function () { return Math.ceil(settings.total / settings.itemsPerPage); }
+        });
+
+        rxPaginateUtils.updateCache(settings, 0, settings.localItems);
+        
+        var updateItems = function (pageNumber) {
+            // This is the function that gets used when doing UI pagination,
+            // thus we're not waiting for the pageNumber to come back from a service,
+            // so we should set it right away. We can also return an empty items list,
+            // because for UI pagination, the items themselves come in through the Pagination
+            // filter
+            settings.pageNumber = pageNumber;
+            var data = {
+                items: [],
+                pageNumber: pageNumber,
+                totalNumberOfItems: settings.total
+            };
+            return $q.when(data);
+        };
+        settings.updateItemsFn = function (fn) {
+            updateItems = fn;
+        };
+
+        // Used by rxPaginate to tell the pager that it should grab
+        // new items from itemsPromise. Set updateCache to false
+        // if the pager should not update its cache with these values
+        // This is where we actually update our state with information
+        // from paginated APIs
+        settings.newItems = function (itemsPromise, updateCache) {
+            if (_.isUndefined(updateCache)) {
+                updateCache = true;
+            }
+            return itemsPromise.then(function (data) {
+                settings.pageNumber = data.pageNumber;
+                settings.localItems = data.items;
+                settings.total = data.totalNumberOfItems;
+                rxPaginateUtils.updatePager(settings,
+                                            data.pageNumber,
+                                            data.totalNumberOfItems);
+                if (updateCache) {
+                    rxPaginateUtils.updateCache(settings, settings.pageNumber, data.items);
+                }
+                return data;
+
+            });
+        };
+
+        // 0-based page number
+        // opts: An object containing:
+        //  forceCacheUpdate: true/false, whether or not to flush the cache
+        //  itemsPerPage: If specificed, request this many items for the page, instead of
+        //                using settings.itemsPerPage
+        settings.goToPage = function (n, opts) {
+            opts = opts || {};
+            var updateCache = true;
+
+            // If the desired page number is currently cached, then just reuse
+            // our `localItems` cache, rather than going back to the API.
+            // By setting `updateCache` to false, it ensures that the current
+            // settings.cacheOffset and settings.cachedPages values stay the
+            // same
+            if (!opts.forceCacheUpdate && _.contains(settings.cachedPages, n)) {
+                updateCache = false;
+                return settings.newItems($q.when({
+                    pageNumber: n,
+                    items: settings.localItems,
+                    totalNumberOfItems: settings.total
+                }), updateCache);
+            }
+
+            var itemsPerPage = opts.itemsPerPage || settings.itemsPerPage;
+            return settings.newItems(updateItems(n, itemsPerPage), updateCache);
+        };
+
+        // This tells the pager to go to the current page, but ensure no cached
+        // values are used. Can be used by page controllers when they want
+        // to force an update
+        settings.refresh = function () {
+            return settings.goToPage(settings.currentPage(), { forceCacheUpdate: true });
+        };
 
         settings.isFirstPage = function () {
             return settings.isPage(0);
@@ -259,65 +344,6 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         
         settings.currentPage = function () {
             return settings.pageNumber;
-        };
-        
-        var updateItems = function (pageNumber) {
-            // This is the function that gets used when doing UI pagination,
-            // thus we're not waiting for the pageNumber to come back from a service,
-            // so we should set it right away.
-            settings.pageNumber = pageNumber;
-            var data = {
-                items: [],
-                pageNumber: pageNumber,
-                totalNumberOfItems: settings.total
-            };
-            return $q.when(data);
-        };
-        settings.updateItemsFn = function (fn) {
-            updateItems = fn;
-        };
-
-        // Used by rxPaginate to tell the pager that it should grab
-        // new items from itemsPromise. Set updateCache to false
-        // if the pager should not update its cache with these values
-        settings.newItems = function (itemsPromise, updateCache) {
-            if (_.isUndefined(updateCache)) {
-                updateCache = true;
-            }
-            return itemsPromise.then(function (data) {
-                settings.pageNumber = data.pageNumber;
-                settings.localItems = data.items;
-                settings.total = data.totalNumberOfItems;
-                rxPaginateUtils.updatePager(settings,
-                                            data.pageNumber,
-                                            data.totalNumberOfItems,
-                                            data.items,
-                                            updateCache);
-                return data;
-
-            });
-        };
-
-        // 0-based page number
-        // opts: An object containing:
-        //  forceCacheUpdate: true/false, whether or not to flush the cache
-        //  itemsPerPage: If specificed, request this many items for the page, instead of
-        //                using settings.itemsPerPage
-        settings.goToPage = function (n, opts) {
-            opts = opts || {};
-            var updateCache = true;
-
-            if (!opts.forceCacheUpdate && _.contains(settings.cachedPages, n)) {
-                updateCache = false;
-                return settings.newItems($q.when({
-                    pageNumber: n,
-                    items: settings.localItems,
-                    totalNumberOfItems: settings.total
-                }), updateCache);
-            }
-
-            var itemsPerPage = opts.itemsPerPage || settings.itemsPerPage;
-            return settings.newItems(updateItems(n, itemsPerPage), updateCache);
         };
 
         settings.goToFirstPage = function () {
@@ -413,8 +439,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             if (pager.pageNumber + 1 > pager.totalPages) {
                 pager.goToLastPage();
             }
-            var updateCache = false;
-            var firstLast = rxPaginateUtils.updatePager(pager, pager.currentPage(), items.length, items, updateCache);
+            var firstLast = rxPaginateUtils.updatePager(pager, pager.currentPage(), items.length);
             return items.slice(firstLast.first, firstLast.last);
         }
     };
@@ -443,7 +468,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
         
     };
 
-    rxPaginateUtils.updatePager = function (pager, pageNumber, totalNumItems, items, updateCache)  {
+    rxPaginateUtils.updatePager = function (pager, pageNumber, totalNumItems)  {
 
         var info = rxPaginateUtils.firstAndLast(pageNumber, pager.itemsPerPage, totalNumItems);
         var first = info.first;
@@ -451,10 +476,6 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
 
         pager.first = first + 1;
         pager.last = last;
-
-        if (updateCache) {
-            rxPaginateUtils.updateCache(pager, pageNumber, items);
-        }
 
         return {
             first: first,

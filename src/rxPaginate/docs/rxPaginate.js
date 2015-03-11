@@ -37,8 +37,11 @@ function rxPaginateCtrl ($scope, $q, $timeout, $filter, rxPaginateUtils, PageTra
     var allLazyServers = makeServers(701);
 
     var serverInterface = {
-        getItems: function (pageNumber, itemsPerPage, filterText, sortPredicate, sortReverse) {
+        getItems: function (pageNumber, itemsPerPage, params) {
             var deferred = $q.defer();
+            var filterText = params.filterText;
+            var sortPredicate = params.sortColumn;
+            var sortDirection = params.sortDirection;
 
             $timeout(function () {
                 var first = pageNumber * itemsPerPage;
