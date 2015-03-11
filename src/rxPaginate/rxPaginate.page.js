@@ -122,9 +122,7 @@ var rxPaginate = {
     pageSizes: {
         get: function () {
             return this.tblPageSizes.map(function (pageSizeElement) {
-                return pageSizeElement.getText().then(function (pageSize) {
-                    return parseInt(pageSize, 10);
-                });
+                return pageSizeElement.getText().then(parseInt);
             });
         }
     },
@@ -132,29 +130,26 @@ var rxPaginate = {
     pageSize: {
         get: function () {
             var css = '.pagination-per-page-button[disabled="disabled"]';
-            return this.rootElement.$(css).getText().then(function (pageSize) {
-                return parseInt(pageSize, 10);
-            });
+            return this.rootElement.$(css).getText().then(parseInt);
         },
         /**
           Will throw an exception if no matching `itemsPerPage` entry is found.
         */
         set: function (itemsPerPage) {
             var page = this;
-            var css = '.pagination-per-page-button';
             return this.pageSizes.then(function (pageSizes) {
                 if (_.indexOf(pageSizes, itemsPerPage) === -1) {
                     page.NoSuchItemsPerPage(itemsPerPage);
                 }
 
-                return page.rootElement.$$(css).each(function (pageSizeElement) {
-                    return pageSizeElement.getText().then(function (pageSize) {
-                        if (parseInt(pageSize, 10) === itemsPerPage) {
-                            pageSizeElement.click();
-                            return false;
-                        }
+                // Using cssContainingText here can throw ugly warnings if
+                // the page sizes include both "50" and "500" (a common occurrence).
+                // Instead, filter out any that don't match, and click it (there's only one).
+                return page.tblPageSizes.filter(function (pageSizeElement) {
+                    return pageSizeElement.getText().then(function (text) {
+                        return parseInt(text) === itemsPerPage;
                     });
-                });
+                }).click();
             });
         }
     },

@@ -15,6 +15,7 @@ describe('rxPaginate', function () {
     describe('API pagination exercises', exercise.rxPaginate({
         pageSizes: [25, 50, 200, 350, 500],
         defaultPageSize: 25,
+        pages: 30,
         cssSelector: '.demo-api-pagination .rx-paginate'
     }));
 });

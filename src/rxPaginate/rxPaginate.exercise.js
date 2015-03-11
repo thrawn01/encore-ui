@@ -120,6 +120,7 @@ exports.rxPaginate = function (options) {
             pagination.totalPages.then(function (totalPages) {
                 pagination.last();
                 expect(pagination.page).to.eventually.equal(totalPages);
+                pagination.first();
             });
         });
 
