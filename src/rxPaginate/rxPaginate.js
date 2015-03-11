@@ -43,11 +43,12 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
             var table = parentElement;
 
             scope.updateItemsPerPage = function (itemsPerPage) {
-                scope.pageTracking.setItemsPerPage(itemsPerPage);
+                return scope.pageTracking.setItemsPerPage(itemsPerPage).then(function () {
 
-                // Set itemsPerPage as the new default value for
-                // all future pagination tables
-                PageTracking.userSelectedItemsPerPage(itemsPerPage);
+                    // Set itemsPerPage as the new default value for
+                    // all future pagination tables
+                    PageTracking.userSelectedItemsPerPage(itemsPerPage);
+                });
             };
 
             scope.scrollToTop = function () {
@@ -371,7 +372,7 @@ angular.module('encore.ui.rxPaginate', ['encore.ui.rxLocalStorage'])
                 forceCacheUpdate: true,
                 itemsPerPage: numItems
             };
-            settings.goToPage(0, opts).then(function (data) {
+            return settings.goToPage(0, opts).then(function (data) {
                 // Wait until we get the data back from the API before we
                 // update itemsPerPage. This ensures that we don't show
                 // a "weird" number of items in a table
