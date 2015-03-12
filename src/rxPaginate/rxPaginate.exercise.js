@@ -42,49 +42,49 @@ exports.rxPaginate = function (options) {
             }
         });
 
-        if (options.pages > 1) {
-            it('should navigate forward one page at a time', function () {
-                pagination.next();
-                expect(pagination.page).to.eventually.equal(2);
-            });
+        // if (options.pages > 1) {
+        //     it('should navigate forward one page at a time', function () {
+        //         pagination.next();
+        //         expect(pagination.page).to.eventually.equal(2);
+        //     });
 
-            it('should navigate backwards one page at a time', function () {
-                pagination.previous();
-                expect(pagination.page).to.eventually.equal(1);
-            });
-        }
+        //     it('should navigate backwards one page at a time', function () {
+        //         pagination.previous();
+        //         expect(pagination.page).to.eventually.equal(1);
+        //     });
+        // }
 
-        if (options.pages > 5) {
-            it('should jump forward to page 6 using pagination', function () {
-                pagination.page = 6;
-                expect(pagination.page).to.eventually.equal(6);
-            });
+        // if (options.pages > 5) {
+        //     it('should jump forward to page 6 using pagination', function () {
+        //         pagination.page = 6;
+        //         expect(pagination.page).to.eventually.equal(6);
+        //     });
 
-            it('should jump backward to page 2 using pagination', function () {
-                pagination.page = 2;
-                expect(pagination.page).to.eventually.equal(2);
-                pagination.page = 1;
-            });
-        }
+        //     it('should jump backward to page 2 using pagination', function () {
+        //         pagination.page = 2;
+        //         expect(pagination.page).to.eventually.equal(2);
+        //         pagination.page = 1;
+        //     });
+        // }
 
-        it('should navigate to the last page', function () {
-            pagination.page.then(function (page) {
-                var firstPage = page;
-                pagination.last();
-                expect(pagination.page).to.eventually.be.above(firstPage);
-            });
-        });
+        // it('should navigate to the last page', function () {
+        //     pagination.page.then(function (page) {
+        //         var firstPage = page;
+        //         pagination.last();
+        //         expect(pagination.page).to.eventually.be.above(firstPage);
+        //     });
+        // });
 
-        it('should not allow navigating `next` the last page', function () {
-            expect(pagination.next).to.throw(pagination.NoSuchPageException);
-        });
+        // it('should not allow navigating `next` the last page', function () {
+        //     expect(pagination.next).to.throw(pagination.NoSuchPageException);
+        // });
 
-        it('should allow attempting to navigate to the last page when already on the last page', function () {
-            pagination.page.then(function (page) {
-                pagination.last();
-                expect(pagination.page).to.eventually.equal(page);
-            });
-        });
+        // it('should allow attempting to navigate to the last page when already on the last page', function () {
+        //     pagination.page.then(function (page) {
+        //         pagination.last();
+        //         expect(pagination.page).to.eventually.equal(page);
+        //     });
+        // });
 
         it('should navigate to the first page', function () {
             pagination.first();
@@ -129,12 +129,17 @@ exports.rxPaginate = function (options) {
             it('should switch to a different items per page', function () {
                 pagination.pageSize = options.pageSizes[1];
                 expect(pagination.pageSize).to.eventually.equal(options.pageSizes[1]);
-            });
-
-            it('should put the user back on the first page after resizing the items per page', function () {
-                expect(pagination.page).to.eventually.equal(1);
                 pagination.pageSize = options.pageSizes[0];
             });
+
+            if (options.pages > 1) {
+                it('should put the user back on the first page after resizing the items per page', function () {
+                    pagination.page = 2;
+                    pagination.pageSize = options.pageSizes[1];
+                    expect(pagination.page).to.eventually.equal(1);
+                    pagination.pageSize = options.pageSizes[0];
+                });
+            }
 
         }
 
@@ -143,7 +148,7 @@ exports.rxPaginate = function (options) {
         });
 
         // execute only if the greatest items per page setting can contain all items
-        if (options.defaultPageSize * options.pages < _.last(options.pageSizes)) {
+        if (_.first(options.pageSizes) * options.pages < _.last(options.pageSizes)) {
 
             it('should not fail to match the upper bounds of the shown items even if not displayed', function () {
                 pagination.pageSize = _.last(options.pageSizes);

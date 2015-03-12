@@ -132,6 +132,7 @@ var rxPaginate = {
             var css = '.pagination-per-page-button[disabled="disabled"]';
             return this.rootElement.$(css).getText().then(parseInt);
         },
+
         /**
           Will throw an exception if no matching `itemsPerPage` entry is found.
         */
@@ -147,9 +148,11 @@ var rxPaginate = {
                 // Instead, filter out any that don't match, and click it (there's only one).
                 return page.tblPageSizes.filter(function (pageSizeElement) {
                     return pageSizeElement.getText().then(function (text) {
-                        return parseInt(text) === itemsPerPage;
+                        return text === itemsPerPage.toString();
                     });
-                }).click();
+                }).then(function (matchingPageSizeElements) {
+                    matchingPageSizeElements[0].$('button').click();
+                });
             });
         }
     },
