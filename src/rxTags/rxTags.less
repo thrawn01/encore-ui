@@ -1,0 +1,83 @@
+/*
+ * rxTags
+ */
+rx-tags {
+    display: block;
+
+    &[disabled] .rx-tags {
+        border: none;
+
+        .fa-times {
+            display: none;
+        }
+
+        &:hover {
+          cursor: default;
+        }
+    }
+}
+.rx-tags {
+
+    background-color: @white;
+    border: 1px solid @rxForm-input-border-color;
+
+    &:hover {
+        cursor: text;
+    }
+
+    input {
+        width: 200px;
+        padding: 3px 5px;
+        margin: 8px 0px;
+    }
+
+    .tag {
+        display: inline-block;
+        margin: 6px 10px;
+        line-height: @rxTag-height;
+        border-radius: @rxTag-height / 2;
+        vertical-align: top;
+        background-color: #e0e0e0;
+        &:hover {
+            cursor: default;
+        }
+
+        &:focus {
+            background-color: #007bff;
+            outline: none;
+            .fa, .text, .category {
+                color: @white;
+            }
+        }
+
+        & > * {
+            vertical-align: middle;
+        }
+
+        .text {
+            font-size: 12px;
+            margin: 0px 7px 0px 10px;
+            color: #727272;
+        }
+
+        .category {
+            font-size: 10px;
+            margin-right: 20px;
+            color: #878787;
+        }
+
+        .fa-tag {
+            margin-left: @rxTag-height / 2;
+            color: #999999;
+        }
+
+        .fa-times {
+            margin-right: @rxTag-height / 2;
+            color: #b8b8b8;
+            &:hover {
+                cursor: pointer;
+                color: @warnRedHover;
+            }
+        }
+    }
+}
