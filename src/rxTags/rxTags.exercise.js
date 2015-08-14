@@ -31,7 +31,7 @@ exports.rxTags = function (options) {
             } else {
                 component = rxTags.main;
             }
-            component.count.then(function (num) {
+            component.count().then(function (num) {
                 numTags = num;
             });
         });
@@ -40,13 +40,13 @@ exports.rxTags = function (options) {
             it('adds a tag', function () {
                 tag = component.addTag(options.sampleText);
                 expect(tag.text).to.eventually.equal(options.sampleText);
-                expect(component.count).to.eventually.equal(numTags + 1);
+                expect(component.count()).to.eventually.equal(numTags + 1);
             });
 
             it('removes a tag by clicking the x', function () {
                 tag.remove();
                 expect(tag.exists()).to.eventually.be.false;
-                expect(component.count).to.eventually.equal(numTags);
+                expect(component.count()).to.eventually.equal(numTags);
             });
 
             it('focuses the last tag by typing backspace', function () {
@@ -59,7 +59,7 @@ exports.rxTags = function (options) {
             it('removes a focused tag by entering a backspace', function () {
                 tag.sendBackspace();
                 expect(component.byText(options.sampleText).exists()).to.eventually.be.false;
-                expect(component.count).to.eventually.equal(numTags);
+                expect(component.count()).to.eventually.equal(numTags);
             });
         }
 

@@ -70,7 +70,7 @@ var rxTags = {
     },
 
     count: {
-        get: function () {
+        value: function () {
             return this.rootElement.$$('.tag').count();
         }
     },

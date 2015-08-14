@@ -2,7 +2,7 @@
     <div class="tag"
         ng-repeat="tag in tags track by tag.text"
         ng-keydown="removeIfBackspace($event, tag)"
-        tabindex="0">
+        tabindex="{{ disabled ? '' : 0 }}">
         <i class="fa fa-tag"></i>
         <span class="text">{{tag.text}}</span>
         <span class="category">({{tag.category}})</span>

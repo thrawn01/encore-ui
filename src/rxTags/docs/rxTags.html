@@ -1,4 +1,8 @@
 <!-- Sample HTML goes here as a live example of how the component can be used -->
 <div ng-controller="rxTagsCtrl">
+    <h3 class="title sm">Standard:</h3>
     <rx-tags ng-model="tags" options="tagOptions" key="text"></rx-tags>
+
+    <h3 class="title sm">Disabled:</h3>
+    <rx-tags ng-model="tagOptions" disabled></rx-tags>
 </div>
