@@ -22,6 +22,17 @@ module.exports = {
         options: {
             middleware: function (cnct) {
                 return [
+                    function (req, res, next) {
+                        if (req.url.indexOf('/encore/feedback') === 0) {
+                            var response = JSON.stringify({ base: 'https://angularjs.org/' });
+                            res.setHeader('Content-Type', 'application/json');
+                            res.setHeader('Content-Length', response.length);
+                            res.statusCode = 200;
+                            res.end(response);
+                            return false;
+                        }
+                        return next();
+                    },
                     config.proxyRequest,
                     config.modRewrite([
                         'login.html /login.html [L]',
@@ -40,7 +51,22 @@ module.exports = {
     keepalive: {
         options: {
             keepalive: true,
-            base: '<%= config.docs %>'
+            middleware: function (cnct) {
+                return [
+                    function (req, res, next) {
+                        if (req.url.indexOf('/encore/feedback') === 0) {
+                            var response = JSON.stringify({ base: 'https://angularjs.org/' });
+                            res.setHeader('Content-Type', 'application/json');
+                            res.setHeader('Content-Length', response.length);
+                            res.statusCode = 200;
+                            res.end(response);
+                            return false;
+                        }
+                        return next();
+                    },
+                    config.mountFolder(cnct, config.docs)
+                ];
+            }
         }
     }
 };
