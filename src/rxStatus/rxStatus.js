@@ -115,6 +115,12 @@ angular.module('encore.ui.rxStatus', ['encore.ui.rxNotify'])
         };
 
         status.setStatus = function (msg, state) {
+            // If this object has prop we are most likely a cloned object returned
+            // by setStatus() Use this prop instead of one passed in by the user.
+            if (_.has(this, 'prop')) {
+                state.prop = this.prop;
+            }
+
             state.stack = stack;
 
             if (!_.has(state, 'dismiss') && isDismissable(state)) {
@@ -133,11 +139,15 @@ angular.module('encore.ui.rxStatus', ['encore.ui.rxNotify'])
 
             setDoneLoadingProp(state, _.has(state, 'loading') ? !state.loading : true);
             scope.status = state;
-            return rxNotify.add(msg, state);
+            // Clone this, so we can return a copy of ourselves
+            var clone = _.clone(this);
+            // Merge the returned msg object with the clone of ourselves
+            _.merge(clone, rxNotify.add(msg, state));
+            return clone;
         };
 
         status.setLoading = function (msg, options) {
-            options = _.defaults(options ? options : {}, status.LOADING());
+            options = _.defaults(options ? options : {}, this.LOADING());
 
             // prop is the variable on scope that stores whether this loading is complete
             // By default is uses $scope.loaded, but individual messages should be able to
@@ -146,34 +156,34 @@ angular.module('encore.ui.rxStatus', ['encore.ui.rxNotify'])
             if (!_.has(scope, prop)) {
                 scope[prop] = false;
             }
-            return status.setStatus(msg || '', options);
+            return this.setStatus(msg || '', options);
         };
 
         status.setSuccess = function (msg, options) {
-            options = _.defaults(options ? options : {}, status.SUCCESS());
-            return status.setStatus(msg || '', options);
+            options = _.defaults(options ? options : {}, this.SUCCESS());
+            return this.setStatus(msg || '', options);
         };
 
         status.setSuccessNext = function (msg, options) {
             var next = { 'show': 'next' };
             options = _.defaults(options ? options : {}, next);
-            return status.setSuccess(msg, options);
+            return this.setSuccess(msg, options);
         };
 
         status.setSuccessImmediate = function (msg, options) {
             var immediate = { 'show': 'immediate' };
             options = _.defaults(options ? options : {}, immediate);
-            return status.setSuccess(msg, options);
+            return this.setSuccess(msg, options);
         };
 
         status.setWarning = function (msg, options) {
-            options = _.defaults(options ? options : {}, status.WARNING());
-            return status.setStatus(msg, options);
+            options = _.defaults(options ? options : {}, this.WARNING());
+            return this.setStatus(msg, options);
         };
 
         status.setInfo = function (msg, options) {
-            options = _.merge(options ? options : {}, status.INFO());
-            return status.setStatus(msg, options);
+            options = _.merge(options ? options : {}, this.INFO());
+            return this.setStatus(msg, options);
         };
 
         /*
@@ -182,22 +192,22 @@ angular.module('encore.ui.rxStatus', ['encore.ui.rxNotify'])
          * `options` - A usual options object
          */
         status.setError = function (msg, error, options) {
-            options = _.defaults(options ? options : {}, status.ERROR());
+            options = _.defaults(options ? options : {}, this.ERROR());
             msg = ErrorFormatter.buildErrorMsg(msg || '', error);
-            return status.setStatus(msg, options);
+            return this.setStatus(msg, options);
         };
 
         status.complete = function (options) {
-            return status.setSuccessImmediate('', _.defaults(options ? options : {}, status.SUCCESS()));
+            return this.setSuccessImmediate('', _.defaults(options ? options : {}, this.SUCCESS()));
         };
 
         status.dismiss = function (obj) {
-            scope.status = status.CLEAR();
+            scope.status = this.CLEAR();
             return rxNotify.dismiss(obj);
         };
 
         status.clear = function (st) {
-            scope.status = status.CLEAR();
+            scope.status = this.CLEAR();
             return rxNotify.clear(st || stack);
         };
 

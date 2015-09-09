@@ -28,6 +28,12 @@ describe('rxStatus: Status', function () {
         expect(status.setStatus.args[0][1]).to.include({ repeat: true, timeout: -1 });
     });
 
+    it('Status: setLoading returns a clone of the status object', function () {
+        status.setLoading('Loading');
+        expect(status.setStatus.returnValues[0]).to.include.keys('prop', 'id');
+        expect(status).to.not.include.keys('prop', 'id', 'setSuccess');
+    });
+
     it('Status: setSuccess returns a success message', function () {
         status.setSuccess('Yup');
         expect(status.setStatus).to.be.calledWithMatch('Yup');
@@ -86,6 +92,30 @@ describe('rxStatus: Status', function () {
         var info = status.setInfo('Info');
         status.dismiss(info);
         expect(scope.status.loading).to.be.false;
+    });
+
+    it('Status: dismiss on a clone of the status object removes an existing message', function () {
+        var loading = status.setLoading('Loading');
+        status.dismiss(loading);
+        expect(scope.status.loading).to.be.false;
+    });
+
+    it('Status: setSuccess on the clone of the status object works', function () {
+        var loading = status.setLoading('Loading');
+        expect(scope.status.loading).to.be.true;
+        loading.setSuccess('Works!');
+        expect(scope.status.loading).to.be.false;
+    });
+
+    it('Status: setSuccess on the clone with a different prop works', function () {
+        var foo = status.setLoading('Loading Foo', { prop: 'foo' });
+        var bar = status.setLoading('Loading Bar', { prop: 'bar' });
+        expect(scope.foo).to.be.false;
+        expect(scope.bar).to.be.false;
+        foo.setSuccess('Loaded Foo');
+        expect(scope.foo).to.be.true;
+        bar.setSuccess('Loaded Bar');
+        expect(scope.bar).to.be.true;
     });
 
     it('Status: should reset stack to "page" upon beginning of route reload', function () {
